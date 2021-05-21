@@ -21,6 +21,7 @@ class MyButton
 
 public class MenuController : MonoBehaviour
 {
+    [SerializeField] OVRInput.Controller controller;
     [SerializeField] GameObject parentCanvas;
     [SerializeField] Menu[] menuData;
     private int selected = 0;
@@ -111,7 +112,7 @@ public class MenuController : MonoBehaviour
     {
         if(m_menuImage == null)
         {
-            GameObject　menuImage = Instantiate(m_menuImagePrefab);
+            GameObject menuImage = Instantiate(m_menuImagePrefab);
             menuImage.name = "MenuImage";
             menuImage.transform.SetParent(parentCanvas.transform);
             menuImage.transform.localPosition = new Vector3(-sizeDelta.x / 2f, -sizeDelta.y / 2f, 0);
@@ -123,7 +124,7 @@ public class MenuController : MonoBehaviour
 
         if(m_selectorImage == null)
         {
-            GameObject　selectorImage = Instantiate(m_menuImagePrefab);
+            GameObject selectorImage = Instantiate(m_menuImagePrefab);
             selectorImage.name = "Selector";
             selectorImage.transform.SetParent(parentCanvas.transform);
             selectorImage.transform.localPosition = new Vector3(-sizeDelta.x / 2f, -sizeDelta.y / 2f, 0);
@@ -189,22 +190,22 @@ public class MenuController : MonoBehaviour
         // }
         // -----
 
-        if (OVRInput.GetDown(OVRInput.Touch.PrimaryThumbstick, OVRInput.Controller.RTouch))
+        if (OVRInput.GetDown(OVRInput.Touch.PrimaryThumbstick, controller))
         {
             //show UI
             parentCanvas.SetActive(true);
         }
-        else if (OVRInput.Get(OVRInput.Touch.PrimaryThumbstick, OVRInput.Controller.RTouch))
+        else if (OVRInput.Get(OVRInput.Touch.PrimaryThumbstick, controller))
         {
-            CalcNowMode(OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.RTouch));
+            CalcNowMode(OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, controller));
         }
-        else if(OVRInput.GetUp(OVRInput.Touch.PrimaryThumbstick, OVRInput.Controller.RTouch))
+        else if(OVRInput.GetUp(OVRInput.Touch.PrimaryThumbstick, controller))
         {
             //hide UI
             parentCanvas.SetActive(false);
         }
 
-        if (OVRInput.GetDown(OVRInput.Button.PrimaryThumbstick, OVRInput.Controller.RTouch))
+        if (OVRInput.GetDown(OVRInput.Button.PrimaryThumbstick, controller))
         {
             //execute
             m_buttons[selected].func.Invoke();

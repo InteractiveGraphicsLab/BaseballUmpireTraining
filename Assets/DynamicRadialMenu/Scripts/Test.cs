@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Test : MonoBehaviour
 {
+    public GameObject m_teleport;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -29,5 +31,15 @@ public class Test : MonoBehaviour
     public void Callback_Three()
     {
         Debug.Log("Callback_Three()");
+    }
+
+    public void ActiveTeleport()
+    {
+        m_teleport.SetActive(true);
+    }
+
+    public void DisableTeleport()
+    {
+        m_teleport.SetActive(false);
     }
 }
