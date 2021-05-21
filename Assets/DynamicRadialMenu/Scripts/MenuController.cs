@@ -1,16 +1,32 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
+
+[Serializable]
+class Menu
+{
+    public string text;
+    public UnityEvent func;
+}
+
+class MyButton
+{
+    public GameObject gameObject;
+    public UnityEvent func;
+    public Text text;
+}
 
 public class MenuController : MonoBehaviour
 {
-    [SerializeField, Range(1, 6)] int menuNum = 2;
-    // [SerializeField] int[] menu = {0, 1, 2};
-    [SerializeField, Range(0, 5)] int selected = 0;
+    [SerializeField] GameObject parentCanvas;
+    [SerializeField] Menu[] menuData;
+    private int selected = 0;
     private int selectedBuf = 0;
     [SerializeField] float radius = 35f;
-    [SerializeField] float moveTime = 1f;
+    [SerializeField] float moveTime = 0.2f;
     [SerializeField] Color menuColor;
     [SerializeField] Color selectorColor;
     [SerializeField] Color highlightColor;
@@ -18,56 +34,37 @@ public class MenuController : MonoBehaviour
 
     [SerializeField] GameObject m_menuImagePrefab;
     [SerializeField] GameObject m_buttonPrefab;
+    [SerializeField] Vector2 sizeDelta;
     [SerializeField] int dynamicPixelsPerUnit = 7;
     [SerializeField] float cooperationRatio = 1.5f;
     [SerializeField] int defualtFontSize = 16;
+    [SerializeField] List<MyButton> m_buttons;
 
     private Image m_menuImage;
     private Image m_selectorImage;
     private Transform m_buttonsParent;
-    class MyButton {
-        public GameObject gameObject;
-        public Button button;
-        public Text text;
-    }
-    private List<MyButton> m_buttons;
+    private int m_mode;
 
     private Quaternion m_from;
     private Quaternion m_to;
     private float m_startTime;
     private float m_timeStep;
 
-    private void CreateMenuUI()
+    private void CalcNowMode(Vector2 trackPadPos)
     {
-        if(m_menuImage == null)
+        if(trackPadPos.x == 0 && trackPadPos.y == 0)
         {
-            GameObject　menuImage = Instantiate(m_menuImagePrefab);
-            menuImage.name = "MenuImage";
-            menuImage.transform.parent = this.transform;
-            m_menuImage = menuImage.GetComponent<Image>();
-            m_menuImage.color = menuColor;
+            return;
         }
 
-        if(m_selectorImage == null)
-        {
-            GameObject　selectorImage = Instantiate(m_menuImagePrefab);
-            selectorImage.name = "Selector";
-            selectorImage.transform.parent = this.transform;
-            m_selectorImage = selectorImage.GetComponent<Image>();
-            m_selectorImage.color = selectorColor;
-            m_selectorImage.fillAmount = 1f / menuNum;
-        }
-
-        if(m_buttonsParent == null)
-        {
-            m_buttonsParent = new GameObject("Buttons").transform;
-            m_buttonsParent.parent = this.transform;
-        }
+        float angle = (((-1f * Mathf.Atan2(trackPadPos.y, trackPadPos.x) * Mathf.Rad2Deg + 360f - 90f))) % 360f;
+        float partAngle = 360f / menuData.Length;
+        selected = Mathf.FloorToInt((angle/ partAngle));
     }
 
     // private void UpdateParamaters()
     // {
-    //     m_selectorImage.fillAmount = 1f / menuNum;
+    //     m_selectorImage.fillAmount = 1f / menuData.Length;
     // }
 
     private void FixedButtonText()
@@ -76,37 +73,79 @@ public class MenuController : MonoBehaviour
         foreach(MyButton mybtn in m_buttons)
         {
             float rot = m_selectorImage.fillAmount * -360f;
-            mybtn.gameObject.transform.localPosition = Quaternion.AngleAxis(i++ * rot + rot / 2, transform.forward) * Vector3.down * radius;
+            mybtn.gameObject.transform.localPosition = Quaternion.AngleAxis(i++ * rot + rot / 2, Vector3.forward) * Vector3.down * radius;
         }
     }
 
-    private void AddMenu()
+    private void AddMenu(Menu menuInfo)
     {
-        for(int i = 0; i < menuNum - m_buttons.Count; ++i)
-        {
-            GameObject btnObj = Instantiate(m_buttonPrefab);
-            MyButton btn = new MyButton();
+        GameObject btnObj = Instantiate(m_buttonPrefab);
+        MyButton btn = new MyButton();
 
-            FixedButtonText();
-            float rot = m_selectorImage.fillAmount * -360f;
-            btnObj.transform.localPosition = Quaternion.AngleAxis(m_buttons.Count * rot + rot / 2, transform.forward) * Vector3.down * radius;
-            btnObj.transform.parent = m_buttonsParent;
-            btn.gameObject = btnObj;
-            btn.button = btnObj.GetComponent<Button>();
-            btn.text = btnObj.GetComponent<Text>();
-            btn.text.color = textColor;
-            btn.text.fontSize = defualtFontSize;
-            m_buttons.Add(btn);
-        }
+        FixedButtonText();
+        float rot = m_selectorImage.fillAmount * -360f;
+        btnObj.transform.SetParent(m_buttonsParent);
+        btnObj.transform.localScale = Vector3.one;
+        btnObj.transform.localRotation = Quaternion.Euler(Vector3.zero);
+        btnObj.transform.localPosition = Quaternion.AngleAxis(m_buttons.Count * rot + rot / 2, Vector3.forward) * Vector3.down * radius;
+        btn.gameObject = btnObj;
+        btn.func = menuInfo.func;
+        btn.text = btnObj.GetComponent<Text>();
+        btn.text.text = menuInfo.text;
+        btn.text.color = textColor;
+        btn.text.fontSize = defualtFontSize;
+        m_buttons.Add(btn);
     }
 
     private void DeleteMenu()
     {
-        for(int i = 0; i < m_buttons.Count - menuNum; ++i)
+        for(int i = 0; i < m_buttons.Count - menuData.Length; ++i)
         {
             Destroy(m_buttons[m_buttons.Count - 1].gameObject);
             m_buttons.RemoveAt(m_buttons.Count - 1);
             FixedButtonText();
+        }
+    }
+
+    private void CreateMenuUI()
+    {
+        if(m_menuImage == null)
+        {
+            GameObject　menuImage = Instantiate(m_menuImagePrefab);
+            menuImage.name = "MenuImage";
+            menuImage.transform.SetParent(parentCanvas.transform);
+            menuImage.transform.localPosition = new Vector3(-sizeDelta.x / 2f, -sizeDelta.y / 2f, 0);
+            menuImage.transform.localRotation = Quaternion.Euler(Vector3.zero);
+            menuImage.transform.localScale = Vector3.one;
+            m_menuImage = menuImage.GetComponent<Image>();
+            m_menuImage.color = menuColor;
+        }
+
+        if(m_selectorImage == null)
+        {
+            GameObject　selectorImage = Instantiate(m_menuImagePrefab);
+            selectorImage.name = "Selector";
+            selectorImage.transform.SetParent(parentCanvas.transform);
+            selectorImage.transform.localPosition = new Vector3(-sizeDelta.x / 2f, -sizeDelta.y / 2f, 0);
+            selectorImage.transform.localRotation = Quaternion.Euler(Vector3.zero);
+            selectorImage.transform.localScale = Vector3.one;
+            m_selectorImage = selectorImage.GetComponent<Image>();
+            m_selectorImage.color = selectorColor;
+            m_selectorImage.fillAmount = 1f / menuData.Length;
+        }
+
+        if(m_buttonsParent == null)
+        {
+            m_buttonsParent = new GameObject("Buttons").transform;
+            m_buttonsParent.SetParent(parentCanvas.transform);
+            m_buttonsParent.transform.localPosition = new Vector3(-sizeDelta.x / 2f, -sizeDelta.y / 2f, 0);
+            m_buttonsParent.transform.localRotation = Quaternion.Euler(Vector3.zero);
+            m_buttonsParent.transform.localScale = Vector3.one;
+        }
+
+        foreach(Menu menuInfo in menuData)
+        {
+            AddMenu(menuInfo);
         }
     }
 
@@ -122,37 +161,60 @@ public class MenuController : MonoBehaviour
             m_buttonPrefab = GameObject.Find("DynamicRadialMenu/Resources/Button");
         }
 
-        this.GetComponent<CanvasScaler>().dynamicPixelsPerUnit = dynamicPixelsPerUnit;
+        parentCanvas.GetComponent<CanvasScaler>().dynamicPixelsPerUnit = dynamicPixelsPerUnit;
+        parentCanvas.GetComponent<RectTransform>().sizeDelta = sizeDelta;
 
         m_buttons = new List<MyButton>();
         m_from = Quaternion.identity;
         m_to = Quaternion.identity;
 
         CreateMenuUI();
+        parentCanvas.SetActive(false);
     }
 
     void Update()
     {
         // ----- Debug -----
-        if(m_buttons.Count < menuNum)
-        {
-            //UpdateParamaters();
-            m_selectorImage.fillAmount = 1f / menuNum;
-            AddMenu();
-        }
-        else if(m_buttons.Count > menuNum)
-        {
-            // UpdateParamaters();
-            m_selectorImage.fillAmount = 1f / menuNum;
-            DeleteMenu();
-        }
+        // if(m_buttons.Count < menuData.Length)
+        // {
+        //     //UpdateParamaters();
+        //     m_selectorImage.fillAmount = 1f / menuData.Length;
+        //     AddMenu();
+        // }
+        // else if(m_buttons.Count > menuData.Length)
+        // {
+        //     // UpdateParamaters();
+        //     m_selectorImage.fillAmount = 1f / menuData.Length;
+        //     DeleteMenu();
+        // }
         // -----
+
+        if (OVRInput.GetDown(OVRInput.Touch.PrimaryThumbstick, OVRInput.Controller.RTouch))
+        {
+            //show UI
+            parentCanvas.SetActive(true);
+        }
+        else if (OVRInput.Get(OVRInput.Touch.PrimaryThumbstick, OVRInput.Controller.RTouch))
+        {
+            CalcNowMode(OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.RTouch));
+        }
+        else if(OVRInput.GetUp(OVRInput.Touch.PrimaryThumbstick, OVRInput.Controller.RTouch))
+        {
+            //hide UI
+            parentCanvas.SetActive(false);
+        }
+
+        if (OVRInput.GetDown(OVRInput.Button.PrimaryThumbstick, OVRInput.Controller.RTouch))
+        {
+            //execute
+            m_buttons[selected].func.Invoke();
+        }
 
         if(selectedBuf != selected)
         {
             m_startTime = Time.time;
             m_from = m_selectorImage.gameObject.transform.localRotation;
-            m_to = Quaternion.AngleAxis(selected * m_selectorImage.fillAmount * -360f, transform.forward);
+            m_to = Quaternion.AngleAxis(selected * m_selectorImage.fillAmount * -360f, Vector3.forward);
 
             for(int i = 0; i < m_buttons.Count; i++)
             {
