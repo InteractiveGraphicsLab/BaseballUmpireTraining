@@ -9,6 +9,12 @@ public class BatterZoneManager : MonoBehaviour
 
     private BatterZoneComponent[] m_batterZones;
 
+    public void WasPitched(int componentNum, bool isStrike)
+    {
+        //save data: component num, isStrike ...
+        
+    }
+
     private void CreateBatterZone()
     {
         bool isStrikeZone;
@@ -24,7 +30,7 @@ public class BatterZoneManager : MonoBehaviour
                 panel.transform.localScale = new Vector3(lineSize, colunmSize, 0);
                 isStrikeZone = 2 <= i && i <= 4 && 2 <= j && j <= 4;
                 m_batterZones[i * 7 + j] = panel.AddComponent<BatterZoneComponent>();
-                m_batterZones[i * 7 + j].Init(this, isStrikeZone);
+                m_batterZones[i * 7 + j].Init(this, i * 7 + j, isStrikeZone);
             }
         }
     }
