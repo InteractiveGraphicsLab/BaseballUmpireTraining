@@ -6,24 +6,25 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 
 [Serializable]
-class Menu
+class MenuEvent
 {
-    public string text;
-    public UnityEvent func;
+    public string[] text;
+    public UnityEvent[] func;
 }
 
 class MyButton
 {
     public GameObject gameObject;
-    public UnityEvent func;
     public Text text;
+    public UnityEvent func;
+    public int index;
 }
 
 public class MenuController : MonoBehaviour
 {
     [SerializeField] OVRInput.Controller controller;
     [SerializeField] GameObject parentCanvas;
-    [SerializeField] Menu[] menuData;
+    [SerializeField] MenuEvent[] menuData;
     private int selected = 0;
     private int selectedBuf = 0;
     [SerializeField] float radius = 35f;
@@ -78,7 +79,7 @@ public class MenuController : MonoBehaviour
         }
     }
 
-    private void AddMenu(Menu menuInfo)
+    private void AddMenu(MenuEvent menuEvent)
     {
         GameObject btnObj = Instantiate(m_buttonPrefab);
         MyButton btn = new MyButton();
@@ -90,9 +91,10 @@ public class MenuController : MonoBehaviour
         btnObj.transform.localRotation = Quaternion.Euler(Vector3.zero);
         btnObj.transform.localPosition = Quaternion.AngleAxis(m_buttons.Count * rot + rot / 2, Vector3.forward) * Vector3.down * radius;
         btn.gameObject = btnObj;
-        btn.func = menuInfo.func;
+        btn.index = 0;
+        btn.func = menuEvent.func[btn.index];
         btn.text = btnObj.GetComponent<Text>();
-        btn.text.text = menuInfo.text;
+        btn.text.text = menuEvent.text[btn.index];
         btn.text.color = textColor;
         btn.text.fontSize = defualtFontSize;
         m_buttons.Add(btn);
@@ -144,9 +146,9 @@ public class MenuController : MonoBehaviour
             m_buttonsParent.transform.localScale = Vector3.one;
         }
 
-        foreach(Menu menuInfo in menuData)
+        foreach(MenuEvent menuEvent in menuData)
         {
-            AddMenu(menuInfo);
+            AddMenu(menuEvent);
         }
     }
 
@@ -209,6 +211,14 @@ public class MenuController : MonoBehaviour
         {
             //execute
             m_buttons[selected].func.Invoke();
+
+            int i = ++m_buttons[selected].index;
+            if(m_buttons[selected].index == menuData[selected].func.Length)
+            {
+                i = m_buttons[selected].index = 0;
+            }
+            m_buttons[selected].func = menuData[selected].func[i];
+            m_buttons[selected].text.text = menuData[selected].text[i];
         }
 
         if(selectedBuf != selected)
