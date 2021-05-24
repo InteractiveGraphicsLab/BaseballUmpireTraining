@@ -15,7 +15,7 @@ public static class Param
     public static float   BASE_Z = 0.0f;
 
     //変化球情報
-    public static Vector3 initPosition    = new Vector3(-0.2f, 1.8f, 17.9f);
+    public static Vector3 initPosition    = new Vector3(-0.2f, 2.1f, 17.6f);
     // public static Vector3 initPosition    = new Vector3(-0.23f, 1.86f, 17.53f);
 
     //初速度
@@ -103,6 +103,8 @@ public class BallDirection
 public class BallSimulator : MonoBehaviour
 {
     [SerializeField] BallManager ballManager;
+    [SerializeField] float waitTime = 2.30f;
+
     private Vector3 m_prevPos;
     private Vector3 m_pos   = new Vector3(0, 0, -100);
     private Vector3 m_velo  = new Vector3(0, 0, 0);
@@ -218,7 +220,7 @@ public class BallSimulator : MonoBehaviour
             //    m_isPitching = false;
             //}
 
-            if (m_timecount < 2.30f) return;
+            if (m_timecount < waitTime) return;
 
             m_prevPos = m_pos;
             //位置、速度の更新
@@ -245,6 +247,7 @@ public class BallSimulator : MonoBehaviour
                 Debug.Log("ゾーン到達点のposの座標 " + zp);
                 Debug.Log("ゾーン到達点のposの座標 " + xi + " " + yi);
 
+                // たぶんきっとif(m_pos.z < 0f)より先に処理されるはず
                 ballManager.EndPitching(xi, yi);
             }
 

@@ -4,17 +4,50 @@ using UnityEngine;
 
 public class Motion : MonoBehaviour
 {
+    [SerializeField] string animationLayerName;
+    [SerializeField] string animationBoolSymbol = "start";
+
     private Animator anim;
     private Vector3 initPos;
     private Quaternion initRot;
+    private bool isAnimating;
 
-    [SerializeField] string animation_name;
+    public void StartPitching()
+    {
+        if(anim.GetBool(animationBoolSymbol))
+            anim.SetBool(animationBoolSymbol, false);
+        InitTransform();
+        isAnimating = true;
+        // todo: StateMachineBehaviourを使おう！
+        StartCoroutine(GameManager.instance.Wait(0.5f, () => {
+            isAnimating = true;
+            anim.SetBool(animationBoolSymbol, isAnimating);
+        }));
+    }
+
+    public bool IsAnimating()
+    {
+        return isAnimating;
+    }
+
+    public bool Isis()
+    {
+        return anim.GetBool(animationBoolSymbol);
+    }
+
+    private void InitTransform()
+    {
+        this.transform.position = initPos;
+        this.transform.rotation = initRot;
+    }
 
     void Start()
     {
-        anim = this.gameObject.GetComponent<Animator>();
+        anim = this.GetComponent<Animator>();
         initPos = this.transform.position;
         initRot = this.transform.rotation;
+        isAnimating = false;
+        anim.SetBool(animationBoolSymbol, isAnimating);
     }
 
     void Update()
@@ -23,19 +56,19 @@ public class Motion : MonoBehaviour
         //     Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Alpha4))
         if(Input.GetKeyDown(KeyCode.Alpha6))
         {
-            anim.SetBool("start", false);
-            this.transform.rotation = initRot;
-            this.transform.position = initPos;
-            anim.SetBool("start", true);
+            StartPitching();
         }
         else if (Input.GetKeyDown(KeyCode.Alpha5))
         {
-            anim.SetBool("start", false);
-            this.transform.rotation = initRot;
-            this.transform.position = initPos;
+            isAnimating = false;
+            anim.SetBool(animationBoolSymbol, isAnimating);
+            InitTransform();
         }
 
-        if(anim.GetCurrentAnimatorStateInfo(0).IsName(animation_name) && anim.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1)
-            anim.SetBool("start", false);
+        if(anim.GetCurrentAnimatorStateInfo(0).IsName(animationLayerName) && anim.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1)
+        {
+            isAnimating = false;
+            anim.SetBool(animationBoolSymbol, isAnimating);
+        }
     }
 }

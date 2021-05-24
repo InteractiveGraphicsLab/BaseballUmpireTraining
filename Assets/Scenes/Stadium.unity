@@ -645,6 +645,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 6589c9ff1dbacbb4fa18b3e4e9e6c5a5, type: 2}
+    - target: {fileID: 9500000, guid: 6db9a521926cab74cacb15818167e42e, type: 3}
+      propertyPath: m_CullingMode
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 13700010, guid: 6db9a521926cab74cacb15818167e42e, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -677,7 +681,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae5dbfe90eca2cd4aa48f4c30ee7350d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animation_name: Pitcher_pitch_state
+  animationLayerName: Pitcher_pitch_move
+  animationBoolSymbol: start
 --- !u!4 &786179850 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400234, guid: 6db9a521926cab74cacb15818167e42e,
@@ -998,11 +1003,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61a9735d35325814698d64a779ef0cd0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isSkipWaitTimeInPractice: 1
+  isSkipWaitTimeInTest: 0
   ball: {fileID: 1660286011}
+  motion: {fileID: 786179848}
   board: {fileID: 1737809707}
   strikeJudgeInput: 16384
   ballJudgeInput: 1
   controller: 2
+  resultTime: 2.5
+  strikeText: Strike
+  ballText: Ball
+  defualtTextColor: {r: 1, g: 1, b: 1, a: 1}
+  correctTextColor: {r: 1, g: 1, b: 1, a: 1}
+  incorrectTextColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &1660286010
 GameObject:
   m_ObjectHideFlags: 0
@@ -1036,7 +1050,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d687711441c83b48b8ceab3b7198089, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ballManager: {fileID: 0}
+  ballManager: {fileID: 1338870265}
+  waitTime: 2.8
 --- !u!96 &1660286012
 TrailRenderer:
   serializedVersion: 2
@@ -1211,7 +1226,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1660286010}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.2, y: 1.8, z: 17.9}
+  m_LocalPosition: {x: -0.2, y: 2.1, z: 17.6}
   m_LocalScale: {x: 0.073, y: 0.073, z: 0.073}
   m_Children: []
   m_Father: {fileID: 2124302968}
@@ -1268,17 +1283,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 14
+    m_FontSize: 20
     m_FontStyle: 0
     m_BestFit: 0
-    m_MinSize: 10
+    m_MinSize: 1
     m_MaxSize: 40
     m_Alignment: 4
     m_AlignByGeometry: 0
@@ -1473,12 +1488,12 @@ PrefabInstance:
     - target: {fileID: 5306290124247336633, guid: f30839042b5c05d47a30dddcac1389c0,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 5306290124247336633, guid: f30839042b5c05d47a30dddcac1389c0,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5306290124247336633, guid: f30839042b5c05d47a30dddcac1389c0,
         type: 3}
