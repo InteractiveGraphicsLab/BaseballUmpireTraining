@@ -12,19 +12,20 @@ public static class Param
 
     public static Vector3 GRAVITY = new Vector3(0, -9.8f, 0);
     public static float   WEIGHT = 0.140f;
-    public static float   BASE_Z = 0.0f;
+    public static float   BASE_Z = -0.6f;
 
     //変化球情報
     public static Vector3 initPosition    = new Vector3(-0.2f, 2.1f, 17.6f);
     // public static Vector3 initPosition    = new Vector3(-0.23f, 1.86f, 17.53f);
 
     //初速度
-    public static Vector3 initVeloFast    = new Vector3(0, 0, -110.0f * 1000.0f / 3600.0f);
-    public static Vector3 initVeloSlider  = new Vector3(0, 0, -100.0f * 1000.0f / 3600.0f);
-    public static Vector3 initVeloCurve   = new Vector3(0, 0,  -90.0f * 1000.0f / 3600.0f);
-    public static Vector3 initVeloScrew   = new Vector3(0, 0, -100.0f * 1000.0f / 3600.0f);
+    // public static Vector3 initVeloFast    = new Vector3(0, 0, -110.0f * 1000.0f / 3600.0f);
+    // public static Vector3 initVeloSlider  = new Vector3(0, 0, -100.0f * 1000.0f / 3600.0f);
+    // public static Vector3 initVeloCurve   = new Vector3(0, 0,  -90.0f * 1000.0f / 3600.0f);
+    // public static Vector3 initVeloScrew   = new Vector3(0, 0, -100.0f * 1000.0f / 3600.0f);
 
     //マグナス力（角度,力）
+    // todo 力もランダムにしたい．めっちゃ曲がる
     public static float[] tmFast   = { -2.0f / 180.0f * Mathf.PI, 1.2f };
     public static float[] tmSlider = { 50.0f / 180.0f * Mathf.PI, 1.0f };
     public static float[] tmCurve  = { 90.0f / 180.0f * Mathf.PI, 0.5f };
@@ -105,6 +106,17 @@ public class BallSimulator : MonoBehaviour
     [SerializeField] BallManager ballManager;
     [SerializeField] float waitTime = 2.30f;
 
+    [SerializeField] float minVelocityFast = 110f;
+    [SerializeField] float maxVelocityFast = 160f;
+    [SerializeField] float minVelocityCurve = 70f;
+    [SerializeField] float maxVelocityCurve = 110f;
+    [SerializeField] float minVelocitySlider = 100f;
+    [SerializeField] float maxVelocitySlider = 140f;
+    [SerializeField] float minVelocityScrew = 100f;
+    [SerializeField] float maxVelocityScrew = 140f;
+    [SerializeField] Material transparentMat;
+    [SerializeField] Material ballTextureMat;
+
     private Vector3 m_prevPos;
     private Vector3 m_pos   = new Vector3(0, 0, -100);
     private Vector3 m_velo  = new Vector3(0, 0, 0);
@@ -113,13 +125,15 @@ public class BallSimulator : MonoBehaviour
     private Vector3 m_nextPos   = new Vector3(0, 0, -100);
     private Vector3 m_nextVelo  = new Vector3(0, 0, 0);
     private Vector3 m_nextForce = new Vector3(0, 0, 0);
+    private float m_velocityBuff = 0;
     // private int     count = 0;
 
+    private Renderer m_renderer;
+    private TrailRenderer m_trail;
     private float m_timecount  = 0.0f ; // ボタン押下後の経過時間
     private bool m_isPitching = false; // カウントの状態を表すフラグ
     private float m_dt = 0.02f;
 
-    private TrailRenderer tr;
 
     public bool IsPitching()
     {
@@ -133,41 +147,90 @@ public class BallSimulator : MonoBehaviour
         m_force = m_nextForce;
 
         this.transform.localPosition = Param.initPosition;
-        tr.Clear();
+        m_trail.Clear();
 
         m_isPitching = true;
         m_timecount = 0;
     }
 
-    public void Fastball(int line = -1, int colunm = -1)
+    public void Fastball(float velocity = 0f, int line = -1, int colunm = -1)
     {
-        SetParameterForBreakingball(Param.initPosition, Param.initVeloFast, Param.rotFast, Param.forceFast, line, colunm);
-    }
+        if(velocity == 0f)
+        {
+            velocity = Random.Range(minVelocityFast, maxVelocityFast);
+            // Debug.Log("Fastball Velocity: " + velocity);
+        }
+        m_velocityBuff = velocity;
 
-    public void Curveball(int line = -1, int colunm = -1)
-    {
-        SetParameterForBreakingball(Param.initPosition, Param.initVeloCurve, Param.rotCurve, Param.forceCurve, line, colunm);
-    }
-
-    public void Sliderball(int line = -1, int colunm = -1)
-    {
-        SetParameterForBreakingball(Param.initPosition, Param.initVeloSlider, Param.rotSlider, Param.forceSlider, line, colunm);
-    }
-
-    public void Screwball(int line = -1, int colunm = -1)
-    {
-        SetParameterForBreakingball(Param.initPosition, Param.initVeloScrew, Param.rotScrew, Param.forceScrew, line, colunm);
-    }
-
-    private void SetParameterForBreakingball(Vector3 pos, Vector3 velo, Quaternion rotVelo, Vector3 force, int line, int colunm)
-    {
         if((Param.zoneDivNum <= line || line < 0) || (Param.zoneDivNum <= colunm || colunm < 0))
         {
             line = Random.Range(0, Param.zoneDivNum);
             colunm = Random.Range(0, Param.zoneDivNum);
-            Debug.Log(line + ", " + colunm);
+            // Debug.Log("Fastball line, column: (" + line + ", " + colunm + ")");
         }
 
+        SetParameterForBreakingball(Param.initPosition, new Vector3(0, 0, velocity * -1000.0f / 3600.0f), Param.rotFast, Param.forceFast, line, colunm);
+    }
+
+    public void Curveball(float velocity = 0f, int line = -1, int colunm = -1)
+    {
+        if(velocity == 0f)
+        {
+            velocity = Random.Range(minVelocityCurve, maxVelocityCurve);
+            // Debug.Log("Curveball Velocity: " + velocity);
+        }
+        m_velocityBuff = velocity;
+
+        if((Param.zoneDivNum <= line || line < 0) || (Param.zoneDivNum <= colunm || colunm < 0))
+        {
+            line = Random.Range(0, Param.zoneDivNum);
+            colunm = Random.Range(0, Param.zoneDivNum);
+            // Debug.Log("Curveball line, column: (" + line + ", " + colunm + ")");
+        }
+
+        SetParameterForBreakingball(Param.initPosition, new Vector3(0, 0, velocity * -1000.0f / 3600.0f), Param.rotCurve, Param.forceCurve, line, colunm);
+    }
+
+    public void Sliderball(float velocity = 0f, int line = -1, int colunm = -1)
+    {
+        if(velocity == 0f)
+        {
+            velocity = Random.Range(minVelocitySlider, maxVelocitySlider);
+            // Debug.Log("Sliderball Velocity: " + velocity);
+        }
+        m_velocityBuff = velocity;
+
+        if((Param.zoneDivNum <= line || line < 0) || (Param.zoneDivNum <= colunm || colunm < 0))
+        {
+            line = Random.Range(0, Param.zoneDivNum);
+            colunm = Random.Range(0, Param.zoneDivNum);
+            // Debug.Log("Sliderball line, column: (" + line + ", " + colunm + ")");
+        }
+
+        SetParameterForBreakingball(Param.initPosition, new Vector3(0, 0, velocity * -1000.0f / 3600.0f), Param.rotSlider, Param.forceSlider, line, colunm);
+    }
+
+    public void Screwball(float velocity = 0f, int line = -1, int colunm = -1)
+    {
+        if(velocity == 0f)
+        {
+            velocity = Random.Range(minVelocityScrew, maxVelocityScrew);
+            // Debug.Log("Screwball Velocity: " + velocity);
+        }
+        m_velocityBuff = velocity;
+
+        if((Param.zoneDivNum <= line || line < 0) || (Param.zoneDivNum <= colunm || colunm < 0))
+        {
+            line = Random.Range(0, Param.zoneDivNum);
+            colunm = Random.Range(0, Param.zoneDivNum);
+            // Debug.Log("Screwball line, column: (" + line + ", " + colunm + ")");
+        }
+
+        SetParameterForBreakingball(Param.initPosition, new Vector3(0, 0, velocity * -1000.0f / 3600.0f), Param.rotScrew, Param.forceScrew, line, colunm);
+    }
+
+    private void SetParameterForBreakingball(Vector3 pos, Vector3 velo, Quaternion rotVelo, Vector3 force, int line, int colunm)
+    {
         Quaternion q = BallDirection.calcBallInitialRotation(pos, velo, rotVelo, force, m_dt, line, colunm);
         m_nextPos   = pos;
         m_nextVelo  = q * velo;
@@ -175,7 +238,8 @@ public class BallSimulator : MonoBehaviour
     }
 
     private void Start() {
-        tr = this.GetComponent<TrailRenderer>();
+        m_trail = this.GetComponent<TrailRenderer>();
+        m_renderer = this.GetComponent<Renderer>();
         this.transform.localPosition = Param.initPosition;
     }
 
@@ -222,6 +286,7 @@ public class BallSimulator : MonoBehaviour
 
             if (m_timecount < waitTime) return;
 
+            m_renderer.material = ballTextureMat;
             m_prevPos = m_pos;
             //位置、速度の更新
             if (m_pos.z > Param.BASE_Z)
@@ -229,6 +294,11 @@ public class BallSimulator : MonoBehaviour
                 //Simulation
                 m_velo = m_velo + (Param.GRAVITY + m_force / Param.WEIGHT) * Time.deltaTime;
                 m_pos = m_pos + m_velo * Time.deltaTime;
+            }
+            else
+            {
+                m_renderer.material = transparentMat;
+                m_isPitching = false;
             }
 
             // this.transform.position = m_pos;
@@ -244,17 +314,11 @@ public class BallSimulator : MonoBehaviour
                 int xi = (int)((zp.x - Param.zonePosLB.x) / Param.zoneWidth * Param.zoneDivNum);
                 int yi = (int)((zp.y - Param.zonePosLB.y) / Param.zoneHeight * Param.zoneDivNum);
 
-                Debug.Log("ゾーン到達点のposの座標 " + zp);
-                Debug.Log("ゾーン到達点のposの座標 " + xi + " " + yi);
+                // Debug.Log("ゾーン到達点のposの座標 " + zp);
+                // Debug.Log("ゾーン到達点のposの座標 " + xi + " " + yi);
 
                 // たぶんきっとif(m_pos.z < 0f)より先に処理されるはず
-                ballManager.EndPitching(xi, yi);
-            }
-
-            // todo: mit の位置で終了したい
-            if(m_pos.z < 0f)
-            {
-                m_isPitching = false;
+                ballManager.EndPitching(m_velocityBuff, xi, yi);
             }
         }
     }

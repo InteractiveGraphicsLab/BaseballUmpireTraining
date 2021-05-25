@@ -939,7 +939,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1310198361}
   m_LocalRotation: {x: -0.17860618, y: 0.38302222, z: -0.38302222, w: 0.82139385}
-  m_LocalPosition: {x: 0, y: 0.5, z: 0.6}
+  m_LocalPosition: {x: 0, y: 0.9, z: 0.6}
   m_LocalScale: {x: 0.010000002, y: 0.010000001, z: 0.01}
   m_Children: []
   m_Father: {fileID: 997108266}
@@ -991,6 +991,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   avater: {fileID: 302358495}
   refereePos: {x: 0, y: 0, z: 2}
+  teleportation: {fileID: 2109898979}
 --- !u!114 &1338870265
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1010,11 +1011,13 @@ MonoBehaviour:
   board: {fileID: 1737809707}
   strikeJudgeInput: 16384
   ballJudgeInput: 1
+  PauseInput: 8192
   controller: 2
   resultTime: 2.5
   strikeText: Strike
   ballText: Ball
   defualtTextColor: {r: 1, g: 1, b: 1, a: 1}
+  pauseTextColor: {r: 0, g: 1, b: 0, a: 1}
   correctTextColor: {r: 1, g: 1, b: 1, a: 1}
   incorrectTextColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &1660286010
@@ -1052,6 +1055,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballManager: {fileID: 1338870265}
   waitTime: 2.8
+  minVelocityFast: 110
+  maxVelocityFast: 160
+  minVelocityCurve: 70
+  maxVelocityCurve: 110
+  minVelocitySlider: 100
+  maxVelocitySlider: 140
+  minVelocityScrew: 100
+  maxVelocityScrew: 140
+  transparentMat: {fileID: 2100000, guid: 09111d010bd451245b644b35d4d4cfc8, type: 2}
+  ballTextureMat: {fileID: 2100000, guid: 146c06d35d2a0ab478310b6b925b7d79, type: 2}
 --- !u!96 &1660286012
 TrailRenderer:
   serializedVersion: 2
@@ -1752,7 +1765,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &2130944801
 MonoBehaviour:
   m_ObjectHideFlags: 0

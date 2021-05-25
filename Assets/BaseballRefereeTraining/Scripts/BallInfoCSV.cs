@@ -8,6 +8,7 @@ public class BallInfoCSV
     public static BallInfo[] Load(string fileName)
     {
         List<BallInfo> result = new List<BallInfo>();
+        //todo
         TextAsset csv = Resources.Load<TextAsset>(fileName);
 
         if(csv)
