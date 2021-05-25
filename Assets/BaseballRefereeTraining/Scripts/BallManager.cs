@@ -14,7 +14,7 @@ public class BallInfo
     public BallType type;
     public float velocity;
     public int line;
-    public int colunm;
+    public int column;
 }
 
 // 7分割前提
@@ -42,59 +42,22 @@ public class BallManager : MonoBehaviour
     private BallType thisBall;
     private float thisSpeed;
     private int thisTargetLine;
-    private int thisTargetColunm;
+    private int thisTargetcolumn;
 
     private BallInfo[] m_order;
     private int m_orderIndex = 0;
     private bool m_judging = false;
     private bool m_isStrike;
 
-    private bool TryParseToEnum(string s, out BallType bt)
+    private void LoadBallsText(string fileName)
     {
-        return Enum.TryParse(s, out bt) && Enum.IsDefined(typeof(BallType), bt);
-    }
-
-    private void LoadBallsText(int index = 0)
-    {
-        string[] splitText = textFiles[index].text.Split(char.Parse("\n"));
-        if(m_order == null)
-        {
-            m_order = new BallInfo[splitText.Length];
-        }
-        else
-        {
-            System.Array.Resize<BallInfo>(ref m_order, splitText.Length);
-        }
-
-        //splitText[i] = "<Balltype> <velocity> <line> <colunm>"
-        for(int i = 0; i < splitText.Length; i++)
-        {
-            //空白除去
-            string[] info = splitText[i].Split(new char[0], StringSplitOptions.RemoveEmptyEntries);
-            m_order[i] = new BallInfo();
-
-            if(info.Length != 4)
-                Debug.LogError("Line " + i + ": Not enough arguments");
-
-            if(!TryParseToEnum(info[0], out m_order[i].type))
-                Debug.LogError("Line " + i + ": There is no definition in BallType: " + m_order[i].type);
-
-            if(!float.TryParse(info[1], out m_order[i].velocity))
-                Debug.LogError("Line " + i + ": Input string could not be converted to Velocity <Float>: " + m_order[i].velocity);
-
-            if(!int.TryParse(info[2], out m_order[i].line))
-                Debug.LogError("Line " + i + ": Input string could not be converted to Line <Int>: " + m_order[i].line);
-
-            if(!int.TryParse(info[2], out m_order[i].colunm))
-                Debug.LogError("Line " + i + ": Input string could not be converted to Colunm <Int>: " + m_order[i].colunm);
-        }
-
+        m_order = BallInfoCSV.Load(fileName);
         m_orderIndex = 0;
 
         //Debug
         // foreach(BallInfo info in m_order)
         // {
-        //     Debug.Log("Type: " + info.type + "\nVelocity: " + info.velocity + "\nLine: " + info.type + "\nColunm: "  + info.colunm);
+        //     Debug.Log("Type: " + info.type + "\nVelocity: " + info.velocity + "\nLine: " + info.type + "\ncolumn: "  + info.column);
         // }
     }
 
@@ -129,13 +92,13 @@ public class BallManager : MonoBehaviour
         motion.StartPitching();
     }
 
-    public void EndPitching(int line, int colunm)
+    public void EndPitching(int line, int column)
     {
         // todo ここが7分割前提
         line = 6 - line;
         thisTargetLine = line;
-        thisTargetColunm = colunm;
-        m_isStrike = 5 > line && line > 1 && 5 > colunm && colunm > 1;
+        thisTargetcolumn = column;
+        m_isStrike = 5 > line && line > 1 && 5 > column && column > 1;
     }
 
     //strike: true
@@ -149,13 +112,14 @@ public class BallManager : MonoBehaviour
         if(!isCorrectAns) StartCoroutine(GameManager.instance.Vibrate(controller, 0.5f));
 
         Debug.Log("thisBall  : " + thisBall);
-        Debug.Log("thisTarget: (" + thisTargetLine + ", " + thisTargetColunm + ")");
+        Debug.Log("thisTarget: (" + thisTargetLine + ", " + thisTargetcolumn + ")");
         //todo save his judgement
     }
 
     private void Start()
     {
-        LoadBallsText();
+        LoadBallsText("TestBalls");
+        LoadBallsText("TestBalls2");
     }
 
     private void Update()
