@@ -8,16 +8,30 @@ public class BatterZoneManager : MonoBehaviour
     [SerializeField] float colunmLength = 1.4f;
     [SerializeField] float z = 0.43f;
     [SerializeField] int divNum = 7;
+    [SerializeField] Material strikeMat;
+    [SerializeField] Material ballMat;
+    [SerializeField] Material tracerMat;
 
+    private Renderer m_ballTracer;
     private Transform m_batterZoneParent;
     private Transform m_batterZoneLineParent;
 
     private BatterZoneComponent[] m_batterZones;
 
-    public void WasPitched(int componentNum, bool isStrike)
+    public void ShowBallTrace(Vector3 pos)
     {
-        //save data: component num, isStrike ...
-        
+        m_ballTracer.gameObject.transform.localPosition = new Vector3(-pos.x, pos.y, pos.z);
+
+        m_batterZoneParent.gameObject.SetActive(true);
+        m_batterZoneLineParent.gameObject.SetActive(true);
+        m_ballTracer.gameObject.SetActive(true);
+    }
+
+    public void HideBallTrace()
+    {
+        m_batterZoneParent.gameObject.SetActive(false);
+        m_batterZoneLineParent.gameObject.SetActive(false);
+        m_ballTracer.gameObject.SetActive(false);
     }
 
     private void CreateBatterZone()
@@ -35,15 +49,27 @@ public class BatterZoneManager : MonoBehaviour
         {
             for(int j = 0; j < divNum; j++)
             {
-                GameObject panel = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                // GameObject panel = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                GameObject panel = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 panel.transform.SetParent(m_batterZoneParent);
                 panel.transform.localPosition = new Vector3(startLine + j * lineSize, i * colunmSize, z);
-                panel.transform.localScale = new Vector3(lineSize, colunmSize, 0);
+                panel.transform.localScale = new Vector3(lineSize, colunmSize, 0.001f);
                 isStrikeZone = 2 <= i && i <= 4 && 2 <= j && j <= 4;
                 m_batterZones[i * divNum + j] = panel.AddComponent<BatterZoneComponent>();
-                m_batterZones[i * divNum + j].Init(this, i * divNum + j, isStrikeZone);
+                m_batterZones[i * divNum + j].Init(this, i * divNum + j, isStrikeZone, isStrikeZone ? strikeMat : ballMat);
             }
         }
+    }
+
+    private void SetUpLineRenderer(LineRenderer line)
+    {
+        line.material = new Material(Shader.Find("Sprites/Default"));
+        line.startColor = Color.black;
+        line.endColor = Color.black;
+        line.numCapVertices = 10;
+        line.numCornerVertices = 10;
+        line.loop = true;
+        line.widthMultiplier = 0.2f;
     }
 
     private void CreateBatterZoneLine()
@@ -52,69 +78,62 @@ public class BatterZoneManager : MonoBehaviour
         m_batterZoneLineParent.SetParent(this.transform);
         m_batterZoneLineParent.localPosition = Vector3.zero;
 
-        GameObject frame = new GameObject("ZoneFrame");
-        frame.transform.SetParent(m_batterZoneLineParent);
-        frame.transform.localPosition = Vector3.zero;
-        LineRenderer line = frame.AddComponent<LineRenderer>();
-        Vector3[] positions = new Vector3[4]{
-            new Vector3(lineLength / 2f, 0, z),
-            new Vector3(lineLength / -2f, 0, z),
-            new Vector3(lineLength / -2f, colunmLength, z),
-            new Vector3(lineLength / 2f, colunmLength, z)
-        };
-        line.positionCount = positions.Length;
-        line.SetPositions(positions);
-        line.material = new Material(Shader.Find("Sprites/Default"));
-        line.startColor = Color.black;
-        line.endColor = Color.black;
-        line.startWidth = 0.01f;
-        line.endWidth = 0.01f;
-        line.loop = true;
-
         GameObject strikeFrame = new GameObject("StrikeZoneFrame");
         strikeFrame.transform.SetParent(m_batterZoneLineParent);
         strikeFrame.transform.localPosition = Vector3.zero;
         LineRenderer strikeLine = strikeFrame.AddComponent<LineRenderer>();
         Vector3[] strikePositions = new Vector3[4]{
-            new Vector3(lineLength / 2f - lineLength / divNum * 2f, colunmLength / divNum * 2, z),
-            new Vector3(lineLength / 2f - lineLength / divNum * 2f, colunmLength - colunmLength / divNum * 2, z),
-            new Vector3(lineLength / -2f + lineLength / divNum * 2f, colunmLength - colunmLength / divNum * 2, z),
-            new Vector3(lineLength / -2f + lineLength / divNum * 2f, colunmLength / divNum * 2, z)
+            new Vector3(lineLength / 2f - lineLength / divNum * 2f, colunmLength / divNum * 2f, z),
+            new Vector3(lineLength / 2f - lineLength / divNum * 2f, colunmLength - colunmLength / divNum * 2f, z),
+            new Vector3(lineLength / -2f + lineLength / divNum * 2f, colunmLength - colunmLength / divNum * 2f, z),
+            new Vector3(lineLength / -2f + lineLength / divNum * 2f, colunmLength / divNum * 2f, z)
         };
-        strikeLine.material = new Material(Shader.Find("Sprites/Default"));
-        strikeLine.startColor = Color.black;
-        strikeLine.endColor = Color.black;
-        strikeLine.numCapVertices = 1;
-        strikeLine.numCornerVertices = 1;
-        strikeLine.loop = true;
         strikeLine.positionCount = strikePositions.Length;
         strikeLine.SetPositions(strikePositions);
-
+        SetUpLineRenderer(strikeLine);
         strikeLine.startWidth = 0.01f;
         strikeLine.endWidth = 0.01f;
 
-        // for(int i = 0; i < 4; i++)
-        // {
-        //     GameObject strikeFrame = new GameObject("StrikeZoneFrame" + i);
-        //     strikeFrame.transform.SetParent(m_batterZoneLineParent);
-        //     strikeFrame.transform.localPosition = Vector3.zero;
-        //     LineRenderer strikeLine = strikeFrame.AddComponent<LineRenderer>();
-        //     strikeLine.material = new Material(Shader.Find("Sprites/Default"));
-        //     strikeLine.startColor = Color.black;
-        //     strikeLine.endColor = Color.black;
-        //     strikeLine.startWidth = 0.01f;
-        //     strikeLine.endWidth = 0.01f;
-        //     if(i == 3)
-        //     {
-        //         strikeLine.SetPosition(0, strikePositions[i]);
-        //         strikeLine.SetPosition(1, strikePositions[0]);
-        //     }
-        //     else
-        //     {
-        //         strikeLine.SetPosition(0, strikePositions[i]);
-        //         strikeLine.SetPosition(1, strikePositions[i + 1]);
-        //     }
-        // }
+        //todo 7分割前提
+        Vector3[][] innerPositions = new Vector3[][]{
+            new Vector3[]{
+                new Vector3(lineLength / 2f - lineLength / divNum * 3f, colunmLength / divNum * 2f, z),
+                new Vector3(lineLength / 2f - lineLength / divNum * 3f, colunmLength - colunmLength / divNum * 2f, z)
+            },
+            new Vector3[]{
+                new Vector3(lineLength / 2f - lineLength / divNum * 4f, colunmLength / divNum * 2f, z),
+                new Vector3(lineLength / 2f - lineLength / divNum * 4f, colunmLength - colunmLength / divNum * 2f, z)
+            },
+            new Vector3[]{
+                new Vector3(lineLength / -2f + lineLength / divNum * 2f, colunmLength / divNum * 3f, z),
+                new Vector3(lineLength / 2f - lineLength / divNum * 2f, colunmLength / divNum * 3f, z)
+            },
+            new Vector3[]{
+                new Vector3(lineLength / -2f + lineLength / divNum * 2f, colunmLength / divNum * 4f, z),
+                new Vector3(lineLength / 2f - lineLength / divNum * 2f, colunmLength / divNum * 4f, z)
+            }
+        };
+        for(int i = 0; i < 4; i++)
+        {
+            GameObject strikeInnerFrame = new GameObject("StrikeInnerFrame");
+            strikeInnerFrame.transform.SetParent(m_batterZoneLineParent);
+            strikeInnerFrame.transform.localPosition = Vector3.zero;
+            LineRenderer innerLine = strikeInnerFrame.AddComponent<LineRenderer>();
+            innerLine.positionCount = innerPositions[i].Length;
+            innerLine.SetPositions(innerPositions[i]);
+            SetUpLineRenderer(innerLine);
+            innerLine.startWidth = 0.001f;
+            innerLine.endWidth = 0.001f;
+        }
+    }
+
+    private void CreateBallTracer()
+    {
+        GameObject ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        ball.name = "BallTracer";
+        ball.transform.localScale = 0.073f * Vector3.one;
+        m_ballTracer = ball.GetComponent<Renderer>();
+        m_ballTracer.material = tracerMat;
     }
 
     void Start()
@@ -122,6 +141,8 @@ public class BatterZoneManager : MonoBehaviour
         m_batterZones = new BatterZoneComponent[49];
         CreateBatterZone();
         CreateBatterZoneLine();
+        CreateBallTracer();
+        HideBallTrace();
     }
 
     void Update()

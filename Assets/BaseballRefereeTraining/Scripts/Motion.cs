@@ -11,6 +11,7 @@ public class Motion : MonoBehaviour
     private Vector3 initPos;
     private Quaternion initRot;
     private bool isAnimating;
+    private float time = 0;
 
     public void StartPitching()
     {
@@ -30,9 +31,9 @@ public class Motion : MonoBehaviour
         return isAnimating;
     }
 
-    public bool Isis()
+    public void Pause(bool isPause)
     {
-        return anim.GetBool(animationBoolSymbol);
+        anim.speed = isPause ? 0 : 1;
     }
 
     private void InitTransform()
@@ -54,16 +55,16 @@ public class Motion : MonoBehaviour
     {
         // if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Alpha2) ||
         //     Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Alpha4))
-        if(Input.GetKeyDown(KeyCode.Alpha6))
-        {
-            StartPitching();
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            isAnimating = false;
-            anim.SetBool(animationBoolSymbol, isAnimating);
-            InitTransform();
-        }
+        // if(Input.GetKeyDown(KeyCode.Alpha6))
+        // {
+        //     StartPitching();
+        // }
+        // else if (Input.GetKeyDown(KeyCode.Alpha5))
+        // {
+        //     isAnimating = false;
+        //     anim.SetBool(animationBoolSymbol, isAnimating);
+        //     InitTransform();
+        // }
 
         if(anim.GetCurrentAnimatorStateInfo(0).IsName(animationLayerName) && anim.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1)
         {

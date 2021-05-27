@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public enum BallType
 {
-    Fast, Curve, Slider, Screw
+    Fastball, Curve, Slider, Screw
 }
 
 public class BallInfo
@@ -34,7 +34,7 @@ public class BallManager : MonoBehaviour
 
     [SerializeField] BallSimulator ball;
     [SerializeField] Motion motion;
-    [SerializeField] Text board;
+    [SerializeField] BatterZoneManager batterZone;
     [SerializeField] OVRInput.Button strikeJudgeInput = OVRInput.Button.PrimaryHandTrigger;
     [SerializeField] OVRInput.Button ballJudgeInput = OVRInput.Button.One;
     [SerializeField] OVRInput.Button PauseInput = OVRInput.Button.PrimaryIndexTrigger;
@@ -52,17 +52,21 @@ public class BallManager : MonoBehaviour
     private float thisVelocity;
     private int thisTargetLine;
     private int thisTargetcolumn;
+    private Vector3 thisZonePos;
 
+    private BallInfoCSV m_csv;
     private List<BallInfo> m_history;
     private BallInfo[] m_order;
     private int m_orderIndex = 0;
+    private float m_judgementTime = 0;
+    private bool m_initFlag = true;
     private bool m_judging = false;
     private bool m_isPause = false;
     private bool m_isStrike;
 
     private void LoadBallsText(string fileName)
     {
-        m_order = BallInfoCSV.Load(fileName);
+        m_order = m_csv.Load(fileName);
         m_orderIndex = 0;
 
         //Debug
@@ -82,7 +86,7 @@ public class BallManager : MonoBehaviour
     {
         switch(type)
         {
-            case BallType.Fast:
+            case BallType.Fastball:
                 ball.Fastball(velocity, line, column);
                 break;
             case BallType.Curve:
@@ -103,7 +107,7 @@ public class BallManager : MonoBehaviour
         motion.StartPitching();
     }
 
-    public void EndPitching(float velocity, int line, int column)
+    public void EndPitching(float velocity, int line, int column, Vector3 zpos)
     {
         // todo ここが7分割前提
         line = 6 - line;
@@ -111,50 +115,66 @@ public class BallManager : MonoBehaviour
         thisTargetcolumn = column;
         thisVelocity = velocity;
         m_isStrike = 5 > line && line > 1 && 5 > column && column > 1;
+        thisZonePos = zpos;
+        // Debug.Log("ゾーン到達点のposの座標 " + line + ", " + column);
 
         m_history.Add(new BallInfo(thisBall, thisVelocity, thisTargetLine, thisTargetcolumn));
     }
 
     //strike: true
     //ball  : false
-    private void Judge(bool userJudgement)
+    private void Judge(bool userJudgement, float JudgementTime)
     {
         bool isCorrectAns = m_isStrike == userJudgement;
 
-        board.text = m_isStrike ? strikeText : ballText;
-        board.color = isCorrectAns ? correctTextColor : incorrectTextColor;
+        GameManager.instance.SetMainBoard(m_isStrike ? strikeText : ballText, isCorrectAns ? correctTextColor : incorrectTextColor);
         if(!isCorrectAns) StartCoroutine(GameManager.instance.Vibrate(controller, 0.5f));
 
-        Debug.Log("thisBall  : " + thisBall);
-        Debug.Log("thisVelocity  : " + thisVelocity);
-        Debug.Log("thisTarget: (" + thisTargetLine + ", " + thisTargetcolumn + ")");
-        Debug.Log("isCorrectAns: " + isCorrectAns);
+        //save his judgement
+        if(GameManager.instance.GetNowMode() == Mode.Test)
+            m_csv.Write(m_history[m_history.Count - 1], isCorrectAns, JudgementTime);
 
-        //todo save his judgement
+        string ballInfoText = thisBall.ToString() + "\n" + thisVelocity.ToString("00.0") + " km/s";
+        GameManager.instance.SetSubBoard(ballInfoText);
+    }
+
+    private void Pause()
+    {
+        ball.Pause(m_isPause);
+        motion.Pause(m_isPause);
     }
 
     private void Start()
     {
-        LoadBallsText("TestBalls");
         m_history = new List<BallInfo>();
+        m_csv = new BallInfoCSV();
     }
 
-    private void Update()
+    public void UpdateFunction()
     {
-        if(!ball.IsPitching() && OVRInput.GetDown(PauseInput, controller))
+        if (OVRInput.GetDown(PauseInput, controller))
         {
+            // if (GameManager.instance.GetNowMode() == Mode.Practice)
+            // {
+            //     GameManager.instance.ChangeStateToSelect();
+            //     return;
+            // }
             m_isPause = !m_isPause;
-            board.text = m_isPause ? "Pause" : "";
-            board.color = m_isPause ? pauseTextColor : defualtTextColor;
+            Pause();
+            GameManager.instance.SetMainBoard("");
         }
 
-        if(m_isPause) return;
-
-        if(!m_judging && !ball.IsPitching() && GameManager.instance.GetNowState() == State.Judge)
+        if(m_isPause)
         {
-            if(GameManager.instance.GetNowMode() == Mode.Practice)
+            GameManager.instance.SetMainBoard("Pause", pauseTextColor);
+            return;
+        }
+
+        if (!m_judging && !ball.IsPitching())
+        {
+            if (GameManager.instance.GetNowMode() == Mode.Practice)
             {
-                if(!motion.IsAnimating() || isSkipWaitTimeInPractice)
+                if (!motion.IsAnimating() || isSkipWaitTimeInPractice)
                 {
                     thisBall = RandomBalls();
                     SetBallParameter(thisBall);
@@ -162,13 +182,22 @@ public class BallManager : MonoBehaviour
                     m_judging = true;
                 }
             }
-            else if(GameManager.instance.GetNowMode() == Mode.Test)
+            else if (GameManager.instance.GetNowMode() == Mode.Test)
             {
-                if(!motion.IsAnimating() || isSkipWaitTimeInTest)
+                if (m_initFlag)
                 {
-                    if(m_orderIndex == m_order.Length)
+                    LoadBallsText("TestBalls");
+                    m_csv.NewFile();
+                    m_initFlag = false;
+                }
+
+                if (!motion.IsAnimating() || isSkipWaitTimeInTest)
+                {
+                    if (m_orderIndex == m_order.Length)
                     {
                         GameManager.instance.ChangeStateToSelect();
+                        m_csv.EndFile();
+                        m_initFlag = true;
                         m_orderIndex = 0;
                     }
                     else
@@ -183,22 +212,41 @@ public class BallManager : MonoBehaviour
             }
         }
 
-        if(m_judging && !ball.IsPitching())
+        if (m_judging && !ball.IsPitching())
         {
             //Select Strike
             if (OVRInput.GetDown(strikeJudgeInput, controller))
             {
-                Judge(true);
-                StartCoroutine(GameManager.instance.Wait(resultTime, () => { board.text = ""; }));
+                Judge(true, m_judgementTime);
+                batterZone.ShowBallTrace(thisZonePos);
+                StartCoroutine(GameManager.instance.Wait(resultTime, () => {
+                    GameManager.instance.SetMainBoard();
+                    GameManager.instance.SetSubBoard();
+                    batterZone.HideBallTrace();
+                }));
                 m_judging = false;
             }
             //Select Ball
-            else if(OVRInput.GetDown(ballJudgeInput, controller))
+            else if (OVRInput.GetDown(ballJudgeInput, controller))
             {
-                Judge(false);
-                StartCoroutine(GameManager.instance.Wait(resultTime, () => { board.text = ""; }));
+                Judge(false, m_judgementTime);
+                batterZone.ShowBallTrace(thisZonePos);
+                StartCoroutine(GameManager.instance.Wait(resultTime, () => {
+                    GameManager.instance.SetMainBoard();
+                    GameManager.instance.SetSubBoard();
+                    batterZone.HideBallTrace();
+                }));
                 m_judging = false;
             }
+        }
+
+        if (ball.IsPitching())
+        {
+            m_judgementTime = 0;
+        }
+        else
+        {
+            m_judgementTime += Time.deltaTime;
         }
     }
 }

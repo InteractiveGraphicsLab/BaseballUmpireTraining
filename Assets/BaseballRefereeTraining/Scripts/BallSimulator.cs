@@ -132,12 +132,18 @@ public class BallSimulator : MonoBehaviour
     private TrailRenderer m_trail;
     private float m_timecount  = 0.0f ; // ボタン押下後の経過時間
     private bool m_isPitching = false; // カウントの状態を表すフラグ
+    private bool m_isPause = false;
     private float m_dt = 0.02f;
 
 
     public bool IsPitching()
     {
         return m_isPitching;
+    }
+
+    public void Pause(bool isPause)
+    {
+        m_isPause = isPause;
     }
 
     public void StartPitching()
@@ -240,42 +246,42 @@ public class BallSimulator : MonoBehaviour
     private void Start() {
         m_trail = this.GetComponent<TrailRenderer>();
         m_renderer = this.GetComponent<Renderer>();
+        m_renderer.material = transparentMat;
         this.transform.localPosition = Param.initPosition;
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            Fastball();
-            //StartPitching();
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            Curveball();
-            //StartPitching();
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            Sliderball();
-            //StartPitching();
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            Screwball();
-            //StartPitching();
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha6))
-        {
-            StartPitching();
-        }
-
+        // if (Input.GetKeyDown(KeyCode.Alpha1))
+        // {
+        //     Fastball();
+        //     //StartPitching();
+        // }
+        // else if (Input.GetKeyDown(KeyCode.Alpha2))
+        // {
+        //     Curveball();
+        //     //StartPitching();
+        // }
+        // else if (Input.GetKeyDown(KeyCode.Alpha3))
+        // {
+        //     Sliderball();
+        //     //StartPitching();
+        // }
+        // else if (Input.GetKeyDown(KeyCode.Alpha4))
+        // {
+        //     Screwball();
+        //     //StartPitching();
+        // }
+        // else if (Input.GetKeyDown(KeyCode.Alpha6))
+        // {
+        //     StartPitching();
+        // }
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (m_isPitching)
+        if (m_isPitching && !m_isPause)
         {
             m_timecount += Time.deltaTime;
             //if (m_timecount > 6.0)
@@ -308,7 +314,7 @@ public class BallSimulator : MonoBehaviour
             if (m_prevPos.z > Param.zonePosLB.z && Param.zonePosLB.z >= m_pos.z)
             {
                 //内分点の計算
-                float a = (0.43f - m_pos.z) / (m_prevPos.z - m_pos.z);
+                float a = (Param.zonePosLB.z - m_pos.z) / (m_prevPos.z - m_pos.z);
                 Vector3 zp = m_pos + (a * (m_prevPos - m_pos));
 
                 int xi = (int)((zp.x - Param.zonePosLB.x) / Param.zoneWidth * Param.zoneDivNum);
@@ -318,7 +324,7 @@ public class BallSimulator : MonoBehaviour
                 // Debug.Log("ゾーン到達点のposの座標 " + xi + " " + yi);
 
                 // たぶんきっとif(m_pos.z < 0f)より先に処理されるはず
-                ballManager.EndPitching(m_velocityBuff, xi, yi);
+                ballManager.EndPitching(m_velocityBuff, xi, yi, zp);
             }
         }
     }

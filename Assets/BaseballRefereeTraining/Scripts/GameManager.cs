@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum Mode
 {
@@ -48,6 +49,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] Transform avater;
     [SerializeField] Vector3 refereePos;
     [SerializeField] GameObject teleportation;
+    [SerializeField] BallManager ballManager;
+    [SerializeField] Text mainBoard;
+    [SerializeField] Text subBoard;
+    [SerializeField] Text b;
     private State m_nowState = State.Select;
     private Mode m_nowMode = Mode.Practice;
 
@@ -59,6 +64,34 @@ public class GameManager : MonoBehaviour
     public Mode GetNowMode()
     {
         return m_nowMode;
+    }
+
+    // public Text GetMainBoardInstance()
+    // {
+    //     return mainBoard;
+    // }
+
+    // public Text GetSubBoardInstance()
+    // {
+    //     return subBoard;
+    // }
+
+    public void SetMainBoard(string text = "", Color? color = null)
+    {
+        mainBoard.text = text;
+        mainBoard.color =  color ?? Color.white;
+    }
+
+    public void SetSubBoard(string text = "", Color? color = null)
+    {
+        subBoard.text = text;
+        subBoard.color = color ?? Color.white;
+    }
+
+    public void SetB(string text = "", Color? color = null)
+    {
+        b.text = text;
+        b.color = color ?? Color.white;
     }
 
     public void ChangeState(State state)
@@ -130,23 +163,35 @@ public class GameManager : MonoBehaviour
 
     private void InitForSelect()
     {
+        SetMainBoard("Select");
+        SetSubBoard();
         SetActiveTeleport();
     }
 
     private void InitForJudge()
     {
+        SetMainBoard();
+        SetSubBoard();
         SetInactiveTeleport();
         ResetPosition();
     }
 
-    private void Update() {
+    private void Start()
+    {
+        ChangeStateToSelect();
+    }
+
+    private void Update()
+    {
+        SetB(m_nowMode.ToString() + "\n" + m_nowState.ToString());
+
         if(m_nowState == State.Select)
         {
 
         }
         else if(m_nowState == State.Judge)
         {
-
+            ballManager.UpdateFunction();
         }
     }
 }

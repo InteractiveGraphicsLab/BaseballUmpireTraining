@@ -4,36 +4,19 @@ using UnityEngine;
 
 public class BatterZoneComponent : MonoBehaviour
 {
-    [SerializeField] bool m_isStrikeZone;
-    // private boll m_isStrikeZone;
+    private bool m_isStrikeZone;
     private BatterZoneManager m_manager;
     private int m_index;
+    private Material m_mat;
+    private Renderer m_renderer;
 
-    public void Init(BatterZoneManager manager, int index, bool isStrikeZone)
+    public void Init(BatterZoneManager manager, int index, bool isStrikeZone, Material mat)
     {
         m_manager = manager;
         m_index = index;
         m_isStrikeZone = isStrikeZone;
-
-        this.GetComponent<Renderer>().material.EnableKeyword("_EMISSION");
-        if(isStrikeZone)
-        {
-            this.GetComponent<Renderer>().material.SetColor("_EmissionColor", Color.red);
-        }
-        else
-        {
-            this.GetComponent<Renderer>().material.SetColor("_EmissionColor", Color.blue);
-        }
-    }
-
-    private void OnTriggerEnter(Collider ball)
-    {
-        if(ball.CompareTag("Ball"))
-        {
-            //親に伝達
-            m_manager.WasPitched(m_index, m_isStrikeZone);
-
-            //色を変える？
-        }
+        m_mat = mat;
+        m_renderer = this.GetComponent<Renderer>();
+        m_renderer.material = m_mat;
     }
 }

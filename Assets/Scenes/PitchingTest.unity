@@ -948,7 +948,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae5dbfe90eca2cd4aa48f4c30ee7350d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animation_name: Pitcher_pitch_state
+  animationLayerName: 
+  animationBoolSymbol: start
 --- !u!1 &1990599803
 GameObject:
   m_ObjectHideFlags: 0
@@ -982,6 +983,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d687711441c83b48b8ceab3b7198089, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ballManager: {fileID: 0}
+  waitTime: 2.3
+  minVelocityFast: 110
+  maxVelocityFast: 160
+  minVelocityCurve: 70
+  maxVelocityCurve: 110
+  minVelocitySlider: 100
+  maxVelocitySlider: 140
+  minVelocityScrew: 100
+  maxVelocityScrew: 140
+  transparentMat: {fileID: 0}
+  ballTextureMat: {fileID: 0}
 --- !u!135 &1990599805
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1287,7 +1300,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lineLength: 1.0033333
   colunmLength: 1.4
+  z: 0.43
   divNum: 7
+  strikeMat: {fileID: 2100000, guid: c9e2ba0fb8fe1984d91f782097fa18c6, type: 2}
+  ballMat: {fileID: 2100000, guid: 09111d010bd451245b644b35d4d4cfc8, type: 2}
 --- !u!4 &2066848168
 Transform:
   m_ObjectHideFlags: 0
