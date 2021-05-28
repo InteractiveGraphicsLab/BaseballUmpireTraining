@@ -15,14 +15,24 @@ public class BallInfo
     public float velocity;
     public int line;
     public int column;
+    public bool isStrike;
 
     public BallInfo(){}
-    public BallInfo(BallType _type, float _velo, int _line, int _col)
+    public BallInfo(BallType _type, float _velo, int _line, int _col, bool _str)
     {
         type = _type;
         velocity = _velo;
         line = _line;
         column = _col;
+        isStrike = _str;
+    }
+    public BallInfo(BallInfo info)
+    {
+        type = info.type;
+        velocity = info.velocity;
+        line = info.line;
+        column = info.column;
+        isStrike = info.isStrike;
     }
 }
 
@@ -35,10 +45,12 @@ public class BallManager : MonoBehaviour
     [SerializeField] BallSimulator ball;
     [SerializeField] Motion motion;
     [SerializeField] BatterZoneManager batterZone;
+    [SerializeField] HistoryMenu historyMenu;
     [SerializeField] OVRInput.Button strikeJudgeInput = OVRInput.Button.PrimaryHandTrigger;
     [SerializeField] OVRInput.Button ballJudgeInput = OVRInput.Button.One;
     [SerializeField] OVRInput.Button PauseInput = OVRInput.Button.PrimaryIndexTrigger;
     [SerializeField] OVRInput.Controller controller = OVRInput.Controller.RTouch;
+    [SerializeField] OVRInput.Controller subController = OVRInput.Controller.LTouch;
     [SerializeField] float resultTime = 2f;
 
     [SerializeField] string strikeText = "Strike";
@@ -55,14 +67,37 @@ public class BallManager : MonoBehaviour
     private Vector3 thisZonePos;
 
     private BallInfoCSV m_csv;
-    private List<BallInfo> m_history;
     private BallInfo[] m_order;
     private int m_orderIndex = 0;
     private float m_judgementTime = 0;
     private bool m_initFlag = true;
     private bool m_judging = false;
+    private bool m_replay = false;
     private bool m_isPause = false;
     private bool m_isStrike;
+
+    public void Init()
+    {
+        m_initFlag = true;
+        m_judging = false;
+        m_isPause = false;
+        m_replay = false;
+        ball.Init();
+        motion.Init();
+        Pause();
+    }
+
+    public void Replay(bool replay)
+    {
+        m_replay = replay;
+        if(!replay)
+        {
+            m_isPause = false;
+            ball.Init();
+            motion.Init();
+            Pause();
+        }
+    }
 
     private void LoadBallsText(string fileName)
     {
@@ -81,7 +116,6 @@ public class BallManager : MonoBehaviour
         return (BallType)UnityEngine.Random.Range(0, System.Enum.GetNames(typeof(BallType)).Length);
     }
 
-    //todo additional argument: velocity
     private void SetBallParameter(BallType type, float velocity = 0f, int line = -1, int column = -1)
     {
         switch(type)
@@ -116,9 +150,6 @@ public class BallManager : MonoBehaviour
         thisVelocity = velocity;
         m_isStrike = 5 > line && line > 1 && 5 > column && column > 1;
         thisZonePos = zpos;
-        // Debug.Log("ゾーン到達点のposの座標 " + line + ", " + column);
-
-        m_history.Add(new BallInfo(thisBall, thisVelocity, thisTargetLine, thisTargetcolumn));
     }
 
     //strike: true
@@ -126,16 +157,19 @@ public class BallManager : MonoBehaviour
     private void Judge(bool userJudgement, float JudgementTime)
     {
         bool isCorrectAns = m_isStrike == userJudgement;
+        BallInfo info = new BallInfo(thisBall, thisVelocity, thisTargetLine, thisTargetcolumn, m_isStrike);
 
         GameManager.instance.SetMainBoard(m_isStrike ? strikeText : ballText, isCorrectAns ? correctTextColor : incorrectTextColor);
         if(!isCorrectAns) StartCoroutine(GameManager.instance.Vibrate(controller, 0.5f));
 
         //save his judgement
         if(GameManager.instance.GetNowMode() == Mode.Test)
-            m_csv.Write(m_history[m_history.Count - 1], isCorrectAns, JudgementTime);
+            m_csv.Write(info, isCorrectAns, JudgementTime);
 
         string ballInfoText = thisBall.ToString() + "\n" + thisVelocity.ToString("00.0") + " km/s";
         GameManager.instance.SetSubBoard(ballInfoText);
+
+        historyMenu.AddHistory(info, isCorrectAns);
     }
 
     private void Pause()
@@ -146,13 +180,14 @@ public class BallManager : MonoBehaviour
 
     private void Start()
     {
-        m_history = new List<BallInfo>();
         m_csv = new BallInfoCSV();
     }
 
     public void UpdateFunction()
     {
-        if (OVRInput.GetDown(PauseInput, controller))
+        if(GameManager.instance.GetNowState() == State.Select) return;
+
+        if(GameManager.instance.GetNowMode() != Mode.Test && OVRInput.GetDown(PauseInput, subController))
         {
             // if (GameManager.instance.GetNowMode() == Mode.Practice)
             // {
@@ -178,6 +213,7 @@ public class BallManager : MonoBehaviour
                 {
                     thisBall = RandomBalls();
                     SetBallParameter(thisBall);
+                    ball.Trail();
                     StartPitching();
                     m_judging = true;
                 }
@@ -187,6 +223,7 @@ public class BallManager : MonoBehaviour
                 if (m_initFlag)
                 {
                     LoadBallsText("TestBalls");
+                    ball.Trail();
                     m_csv.NewFile();
                     m_initFlag = false;
                 }
@@ -207,6 +244,20 @@ public class BallManager : MonoBehaviour
                         SetBallParameter(thisBall, info.velocity, info.line, info.column);
                         StartPitching();
                         m_judging = true;
+                    }
+                }
+            }
+            else if (GameManager.instance.GetNowMode() == Mode.Replay)
+            {
+                if (!motion.IsAnimating() && m_replay)
+                {
+                    BallInfo info = historyMenu.GetSelectedBallInfo();
+                    if(info.type != null)
+                    {
+                        thisBall = info.type;
+                        SetBallParameter(thisBall, info.velocity, info.line, info.column);
+                        ball.Trail(5f);
+                        StartPitching();
                     }
                 }
             }

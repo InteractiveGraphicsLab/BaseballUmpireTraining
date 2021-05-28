@@ -1,0 +1,3 @@
+﻿BallType,Velocity,Line,Column,IsCorrect,JudgementTime
+Fastball,160,3,3,Incorrect,0.1480368
+Curve,150,3,3,Incorrect,0.1395798

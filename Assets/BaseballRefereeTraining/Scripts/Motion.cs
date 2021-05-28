@@ -13,6 +13,13 @@ public class Motion : MonoBehaviour
     private bool isAnimating;
     private float time = 0;
 
+    public void Init()
+    {
+        isAnimating = false;
+        anim.SetBool(animationBoolSymbol, isAnimating);
+        InitTransform();
+    }
+
     public void StartPitching()
     {
         if(anim.GetBool(animationBoolSymbol))

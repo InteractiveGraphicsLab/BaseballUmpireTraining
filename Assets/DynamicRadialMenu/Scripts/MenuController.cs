@@ -22,6 +22,7 @@ class MyButton
 
 public class MenuController : MonoBehaviour
 {
+    [SerializeField] State state;
     [SerializeField] OVRInput.Controller controller;
     [SerializeField] GameObject parentCanvas;
     [SerializeField] MenuEvent[] menuData;
@@ -45,7 +46,6 @@ public class MenuController : MonoBehaviour
     private Image m_menuImage;
     private Image m_selectorImage;
     private Transform m_buttonsParent;
-    private int m_mode;
 
     private Quaternion m_from;
     private Quaternion m_to;
@@ -191,6 +191,12 @@ public class MenuController : MonoBehaviour
         //     DeleteMenu();
         // }
         // -----
+
+        if(GameManager.instance.GetNowState() != state)
+        {
+            parentCanvas.SetActive(false);
+            return;
+        }
 
         if (OVRInput.GetDown(OVRInput.Touch.PrimaryThumbstick, controller))
         {

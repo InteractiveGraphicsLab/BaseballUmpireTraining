@@ -5,7 +5,7 @@ using UnityEngine;
 
 public static class Param
 {
-    public static Vector3 zonePosLB = new Vector3(-0.43f * 3.5f / 3.0f, 0, 0.43f);
+    public static Vector3 zonePosLB = new Vector3(-0.43f * 3.5f / 3.0f, 0, -0.43f);
     public static float zoneWidth = 0.43f / 3.0f * 7.0f;
     public static float zoneHeight = 1.4f;
     public static int zoneDivNum = 7;
@@ -46,7 +46,6 @@ public static class Param
 
 public class BallDirection
 {
-
     public static Quaternion calcBallInitialRotation(
          Vector3    initPosition,
          Vector3    initVelocity,
@@ -130,11 +129,16 @@ public class BallSimulator : MonoBehaviour
 
     private Renderer m_renderer;
     private TrailRenderer m_trail;
+    private float m_dt = 0.02f;
     private float m_timecount  = 0.0f ; // ボタン押下後の経過時間
     private bool m_isPitching = false; // カウントの状態を表すフラグ
     private bool m_isPause = false;
-    private float m_dt = 0.02f;
 
+    public void Init()
+    {
+        m_timecount  = 0.0f ;
+        m_isPitching = false;
+    }
 
     public bool IsPitching()
     {
@@ -144,6 +148,11 @@ public class BallSimulator : MonoBehaviour
     public void Pause(bool isPause)
     {
         m_isPause = isPause;
+    }
+
+    public void Trail(float time = 0)
+    {
+        m_trail.time = time;
     }
 
     public void StartPitching()
