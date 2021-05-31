@@ -5,38 +5,45 @@ using UnityEngine.UI;
 
 public class Panel : MonoBehaviour
 {
-    [SerializeField] Text panelText;
-    [SerializeField] Image image;
+    [SerializeField] Text balltypeText;
+    [SerializeField] Text velocityText;
+    [SerializeField] GameObject correct;
+    [SerializeField] GameObject incorrect;
+    [SerializeField] Image panelImage;
+    [SerializeField] Image panelHeadImage;
+    [SerializeField] Image judgeImage;
+    [SerializeField] Color correctColor;
+    [SerializeField] Color incorrectColor;
+    [SerializeField] Color backgroundColor;
     [SerializeField] Color selectedColor;
-    // [SerializeField] Color correctColor;
-    // [SerializeField] Color incorrectColor;
-    [SerializeField] Color defualtColor;
-    // [SerializeField] float selectedDelta;
+    [SerializeField] Color strikeColor;
+    [SerializeField] Color ballColor;
 
-    // private float z;
+    private Color defualtColor;
 
-    public void SetPanel(string text, bool isCorrect)
+    public void SetPanel(string typeText, string veloText, bool isCorrect, bool isStrike)
     {
-        panelText.text = text;
-        // defualtColor = isCorrect ? correctColor : incorrectColor;
-        image.color = defualtColor;
+        balltypeText.text = typeText;
+        velocityText.text = veloText;
+        defualtColor = isCorrect ? correctColor : incorrectColor;
+        panelHeadImage.color = defualtColor;
+        correct.SetActive(isCorrect);
+        incorrect.SetActive(!isCorrect);
+        panelImage.color = backgroundColor;
+        judgeImage.color = isStrike ? strikeColor : ballColor;
     }
 
     public void Selected(bool isSelected)
     {
-        image.color = isSelected ? selectedColor : defualtColor;
-        // if(isSelected)
-        // {
-        //     this.transform.localPositon.z = z + selectedDelta;
-        // }
-        // else
-        // {
-        //     this.transform.localPositon.z = z;
-        // }
-    }
-
-    private void Start()
-    {
-        // z = this.tranform.localPositon.z;
+        if(isSelected)
+        {
+            // this.transform.localPosition += new Vector3(0, 0, selectedDelta);
+            panelImage.color = selectedColor;
+        }
+        else
+        {
+            // this.transform.localPosition = pos;
+            panelImage.color = backgroundColor;
+        }
     }
 }
