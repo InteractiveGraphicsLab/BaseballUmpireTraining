@@ -1621,7 +1621,6 @@ MonoBehaviour:
   panelPrefab: {fileID: 2714206870356962087, guid: f54400f7785fb404ab36199e54c4f325,
     type: 3}
   parentHeight: 200
-  text: {fileID: 0}
 --- !u!114 &969776786
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2494,14 +2493,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballManager: {fileID: 1338870265}
   waitTime: 2.8
-  minVelocityFast: 110
-  maxVelocityFast: 160
+  minVelocityFast: 90
+  maxVelocityFast: 120
   minVelocityCurve: 70
-  maxVelocityCurve: 110
-  minVelocitySlider: 100
-  maxVelocitySlider: 140
-  minVelocityScrew: 100
-  maxVelocityScrew: 140
+  maxVelocityCurve: 100
+  minVelocitySlider: 85
+  maxVelocitySlider: 115
+  minVelocityScrew: 85
+  maxVelocityScrew: 115
   transparentMat: {fileID: 2100000, guid: 09111d010bd451245b644b35d4d4cfc8, type: 2}
   ballTextureMat: {fileID: 2100000, guid: 146c06d35d2a0ab478310b6b925b7d79, type: 2}
 --- !u!96 &1660286012
