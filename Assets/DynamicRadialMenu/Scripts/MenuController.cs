@@ -23,6 +23,7 @@ class MyButton
 public class MenuController : MonoBehaviour
 {
     [SerializeField] State state;
+    [SerializeField] OVRInput.Button execute = OVRInput.Button.PrimaryIndexTrigger;
     [SerializeField] OVRInput.Controller controller;
     [SerializeField] GameObject parentCanvas;
     [SerializeField] MenuEvent[] menuData;
@@ -51,11 +52,13 @@ public class MenuController : MonoBehaviour
     private Quaternion m_to;
     private float m_startTime;
     private float m_timeStep;
+    private bool m_isShown = false;
 
     private void CalcNowMode(Vector2 trackPadPos)
     {
-        if(trackPadPos.x == 0 && trackPadPos.y == 0)
+        if(trackPadPos.magnitude < 0.25f)
         {
+            selected = -1;
             return;
         }
 
@@ -108,6 +111,21 @@ public class MenuController : MonoBehaviour
             m_buttons.RemoveAt(m_buttons.Count - 1);
             FixedButtonText();
         }
+    }
+
+    private void Execute()
+    {
+        if(selected < 0) return;
+
+        m_buttons[selected].func.Invoke();
+
+        int i = ++m_buttons[selected].index;
+        if(m_buttons[selected].index == menuData[selected].func.Length)
+        {
+            i = m_buttons[selected].index = 0;
+        }
+        m_buttons[selected].func = menuData[selected].func[i];
+        m_buttons[selected].text.text = menuData[selected].text[i];
     }
 
     private void CreateMenuUI()
@@ -201,37 +219,30 @@ public class MenuController : MonoBehaviour
         if (OVRInput.GetDown(OVRInput.Touch.PrimaryThumbstick, controller))
         {
             //show UI
-            parentCanvas.SetActive(true);
+            m_isShown = true;
+            parentCanvas.SetActive(m_isShown);
         }
-        else if (OVRInput.Get(OVRInput.Touch.PrimaryThumbstick, controller))
+        else if (m_isShown && OVRInput.Get(OVRInput.Touch.PrimaryThumbstick, controller))
         {
-            CalcNowMode(OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, controller));
+            Vector2 padPos = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, controller);
+            CalcNowMode(padPos);
+            m_selectorImage.gameObject.SetActive(selected >= 0);
+
+            if(OVRInput.GetDown(execute, controller))
+            {
+                Execute();
+            }
         }
         else if(OVRInput.GetUp(OVRInput.Touch.PrimaryThumbstick, controller))
         {
             //hide UI
-            parentCanvas.SetActive(false);
-        }
-
-        if (OVRInput.GetDown(OVRInput.Button.PrimaryThumbstick, controller))
-        {
-            //execute
-            m_buttons[selected].func.Invoke();
-
-            int i = ++m_buttons[selected].index;
-            if(m_buttons[selected].index == menuData[selected].func.Length)
-            {
-                i = m_buttons[selected].index = 0;
-            }
-            m_buttons[selected].func = menuData[selected].func[i];
-            m_buttons[selected].text.text = menuData[selected].text[i];
+            m_isShown = false;
+            parentCanvas.SetActive(m_isShown);
         }
 
         if(selectedBuf != selected)
         {
             m_startTime = Time.time;
-            m_from = m_selectorImage.gameObject.transform.localRotation;
-            m_to = Quaternion.AngleAxis(selected * m_selectorImage.fillAmount * -360f, Vector3.forward);
 
             for(int i = 0; i < m_buttons.Count; i++)
             {
@@ -250,6 +261,17 @@ public class MenuController : MonoBehaviour
                     m_buttons[i].text.color = textColor;
                 }
             }
+
+            if(selectedBuf < 0 && selected >= 0)
+            {
+                m_from = Quaternion.AngleAxis(selected * m_selectorImage.fillAmount * -360f, Vector3.forward);
+            }
+            else
+            {
+                m_from = m_selectorImage.gameObject.transform.localRotation;
+            }
+            m_to = Quaternion.AngleAxis(selected * m_selectorImage.fillAmount * -360f, Vector3.forward);
+
             selectedBuf = selected;
         }
 

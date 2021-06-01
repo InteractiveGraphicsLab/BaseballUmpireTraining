@@ -20,18 +20,28 @@ public class BatterZoneManager : MonoBehaviour
 
     public void ShowBallTrace(Vector3 pos)
     {
-        m_ballTracer.gameObject.transform.localPosition = new Vector3(-pos.x, pos.y, -pos.z);
+        m_ballTracer.gameObject.transform.localPosition = new Vector3(-pos.x, pos.y, z);
 
+        ShowBatterZone();
+        m_ballTracer.gameObject.SetActive(true);
+    }
+
+    public void ShowBatterZone()
+    {
         m_batterZoneParent.gameObject.SetActive(true);
         m_batterZoneLineParent.gameObject.SetActive(true);
-        m_ballTracer.gameObject.SetActive(true);
     }
 
     public void HideBallTrace()
     {
+        HideBatterZone();
+        m_ballTracer.gameObject.SetActive(false);
+    }
+
+    public void HideBatterZone()
+    {
         m_batterZoneParent.gameObject.SetActive(false);
         m_batterZoneLineParent.gameObject.SetActive(false);
-        m_ballTracer.gameObject.SetActive(false);
     }
 
     private void CreateBatterZone()

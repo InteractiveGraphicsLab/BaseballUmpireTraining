@@ -47,11 +47,12 @@ public class GameManager : MonoBehaviour
     }
 
     [SerializeField] Transform avater;
-    [SerializeField] Vector3 refereePos;
     [SerializeField] GameObject teleportation;
     [SerializeField] BallManager ballManager;
     [SerializeField] Text mainBoard;
     [SerializeField] Text subBoard;
+    private Vector3 m_refereePos;
+    private Quaternion m_refereeRot;
     private State m_nowState = State.Select;
     private Mode m_nowMode = Mode.Practice;
 
@@ -171,7 +172,8 @@ public class GameManager : MonoBehaviour
 
     public void ResetPosition()
     {
-        avater.position = new Vector3(refereePos.x, refereePos.y, refereePos.z);
+        avater.position = m_refereePos;
+        avater.rotation = m_refereeRot;
     }
 
     public IEnumerator Vibrate(OVRInput.Controller controller = OVRInput.Controller.Active, float duration = 0.1f, float frequency = 0.3f, float amplitude = 0.3f)
@@ -211,6 +213,8 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        m_refereePos = avater.position;
+        m_refereeRot = avater.rotation;
         ChangeStateToSelect();
     }
 

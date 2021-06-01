@@ -1,6 +1,0 @@
-﻿BallType,Velocity,Line,Column,IsCorrect,JudgementTime
-Fastball,160,3,3,Correct,0.5287279
-Curve,150,3,3,Correct,0.4181454
-Slider,150,3,3,Correct,1.113787
-Screw,150,3,3,Correct,0.2082537
-Fastball,70,3,3,Correct,0.3623244

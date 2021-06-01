@@ -179,8 +179,10 @@ public class BallSimulator : MonoBehaviour
 
         if((Param.zoneDivNum <= line || line < 0) || (Param.zoneDivNum <= colunm || colunm < 0))
         {
-            line = Random.Range(0, Param.zoneDivNum);
-            colunm = Random.Range(0, Param.zoneDivNum);
+            int[] target = RandomTarget();
+            line = target[0];
+            colunm = target[1];
+            target = null;
             // Debug.Log("Fastball line, column: (" + line + ", " + colunm + ")");
         }
 
@@ -198,8 +200,10 @@ public class BallSimulator : MonoBehaviour
 
         if((Param.zoneDivNum <= line || line < 0) || (Param.zoneDivNum <= colunm || colunm < 0))
         {
-            line = Random.Range(0, Param.zoneDivNum);
-            colunm = Random.Range(0, Param.zoneDivNum);
+            int[] target = RandomTarget();
+            line = target[0];
+            colunm = target[1];
+            target = null;
             // Debug.Log("Curveball line, column: (" + line + ", " + colunm + ")");
         }
 
@@ -217,8 +221,10 @@ public class BallSimulator : MonoBehaviour
 
         if((Param.zoneDivNum <= line || line < 0) || (Param.zoneDivNum <= colunm || colunm < 0))
         {
-            line = Random.Range(0, Param.zoneDivNum);
-            colunm = Random.Range(0, Param.zoneDivNum);
+            int[] target = RandomTarget();
+            line = target[0];
+            colunm = target[1];
+            target = null;
             // Debug.Log("Sliderball line, column: (" + line + ", " + colunm + ")");
         }
 
@@ -236,12 +242,36 @@ public class BallSimulator : MonoBehaviour
 
         if((Param.zoneDivNum <= line || line < 0) || (Param.zoneDivNum <= colunm || colunm < 0))
         {
-            line = Random.Range(0, Param.zoneDivNum);
-            colunm = Random.Range(0, Param.zoneDivNum);
+            int[] target = RandomTarget();
+            line = target[0];
+            colunm = target[1];
+            target = null;
             // Debug.Log("Screwball line, column: (" + line + ", " + colunm + ")");
         }
 
         SetParameterForBreakingball(Param.initPosition, new Vector3(0, 0, velocity * -1000.0f / 3600.0f), Param.rotScrew, Param.forceScrew, line, colunm);
+    }
+
+    //todo: 7分割，2,3,4がストライク前提
+    private int[] RandomTarget()
+    {
+        int[] target = new int[2];
+
+        if(Random.value <= 0.5f)
+        {
+            //strike
+            target[0] = Random.Range(2, 5);
+            target[1] = Random.Range(2, 5);
+        }
+        else
+        {
+            target[0] = Random.Range(0, 4);
+            if(target[0] > 1) target[0] += 3;
+            target[1] = Random.Range(0, 4);
+            if(target[1] > 1) target[1] += 3;
+        }
+
+        return target;
     }
 
     private void SetParameterForBreakingball(Vector3 pos, Vector3 velo, Quaternion rotVelo, Vector3 force, int line, int colunm)

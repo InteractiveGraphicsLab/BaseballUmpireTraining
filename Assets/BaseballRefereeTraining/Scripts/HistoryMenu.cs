@@ -35,13 +35,14 @@ public class HistoryMenu : MonoBehaviour
     private int m_selected = 0;
     private int m_topIndex = 0;
     private int m_maxCapacity = 0;
+    private float m_futureHieght = 1f;
     private float m_panelHeight;
-    private bool m_scrollUp;
-    private bool m_scrollDown;
     private float m_minHeight;
     private float m_maxHeight;
     private float m_perHieght;
     private float m_t;
+    private bool m_scrollUp;
+    private bool m_scrollDown;
 
     public void Next()
     {
@@ -83,13 +84,11 @@ public class HistoryMenu : MonoBehaviour
     {
         if(m_history.Count * m_panelHeight > parentHeight && m_topIndex == m_selected && m_selected != 0)
         {
-            float deltaHeight = (m_history.Count * m_panelHeight) - parentHeight;
-            m_perHieght = m_panelHeight / deltaHeight;
-
+            m_perHieght = m_panelHeight / ((m_history.Count * m_panelHeight) - parentHeight);
             m_t = 0;
             m_topIndex--;
             m_minHeight = scrollbar.value;
-            m_maxHeight = m_minHeight + m_perHieght;
+            m_maxHeight = GetFutureHeight(m_topIndex);
             m_scrollUp = true;
         }
     }
@@ -98,13 +97,11 @@ public class HistoryMenu : MonoBehaviour
     {
         if(m_history.Count * m_panelHeight > parentHeight && m_topIndex + m_maxCapacity == m_selected)
         {
-            float deltaHeight = (m_history.Count * m_panelHeight) - parentHeight;
-            m_perHieght = m_panelHeight / deltaHeight;
-
+            m_perHieght = m_panelHeight / ((m_history.Count * m_panelHeight) - parentHeight);
             m_t = 1f;
             m_topIndex++;
+            m_minHeight = GetFutureHeight(m_topIndex);
             m_maxHeight = scrollbar.value;
-            m_minHeight = m_maxHeight - m_perHieght;
             m_scrollDown = true;
         }
     }
@@ -113,13 +110,11 @@ public class HistoryMenu : MonoBehaviour
     {
         if(m_history.Count * m_panelHeight > parentHeight)
         {
-            float deltaHeight = (m_history.Count * m_panelHeight) - parentHeight;
-            m_perHieght = m_panelHeight / deltaHeight;
-
+            m_perHieght = m_panelHeight / ((m_history.Count * m_panelHeight) - parentHeight);
             m_t = 0;
             m_topIndex = 0;
-            m_maxHeight = 1f;
             m_minHeight = scrollbar.value;
+            m_maxHeight = 1f;
             m_scrollUp = true;
         }
     }
@@ -128,15 +123,18 @@ public class HistoryMenu : MonoBehaviour
     {
         if(m_history.Count * m_panelHeight > parentHeight)
         {
-            float deltaHeight = (m_history.Count * m_panelHeight) - parentHeight;
-            m_perHieght = m_panelHeight / deltaHeight;
-
+            m_perHieght = m_panelHeight / ((m_history.Count * m_panelHeight) - parentHeight);
             m_t = 1f;
             m_topIndex = m_history.Count - m_maxCapacity;
-            m_maxHeight = scrollbar.value;
             m_minHeight = 0;
+            m_maxHeight = scrollbar.value;
             m_scrollDown = true;
         }
+    }
+
+    public float GetFutureHeight(int index)
+    {
+        return 1f - index * m_perHieght;
     }
 
     public BallInfo GetSelectedBallInfo()

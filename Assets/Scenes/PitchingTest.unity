@@ -1304,6 +1304,7 @@ MonoBehaviour:
   divNum: 7
   strikeMat: {fileID: 2100000, guid: c9e2ba0fb8fe1984d91f782097fa18c6, type: 2}
   ballMat: {fileID: 2100000, guid: 09111d010bd451245b644b35d4d4cfc8, type: 2}
+  tracerMat: {fileID: 0}
 --- !u!4 &2066848168
 Transform:
   m_ObjectHideFlags: 0
