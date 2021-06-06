@@ -155,14 +155,19 @@ public class BallSimulator : MonoBehaviour
         m_trail.time = time;
     }
 
+    public void InitPosition()
+    {
+        this.transform.localPosition = Param.initPosition;
+        m_trail.Clear();
+    }
+
     public void StartPitching()
     {
         m_pos = m_nextPos;
         m_velo = m_nextVelo;
         m_force = m_nextForce;
 
-        this.transform.localPosition = Param.initPosition;
-        m_trail.Clear();
+        InitPosition();
 
         m_isPitching = true;
         m_timecount = 0;

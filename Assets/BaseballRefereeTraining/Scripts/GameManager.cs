@@ -48,9 +48,13 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] Transform avater;
     [SerializeField] GameObject teleportation;
+    [SerializeField] GameObject teleportPoint;
     [SerializeField] BallManager ballManager;
+    [SerializeField] MenuManger menuManger;
+    [SerializeField] HistoryMenu historyMenu;
     [SerializeField] Text mainBoard;
     [SerializeField] Text subBoard;
+    [SerializeField] Text modeBoard;
     private Vector3 m_refereePos;
     private Quaternion m_refereeRot;
     private State m_nowState = State.Select;
@@ -88,6 +92,12 @@ public class GameManager : MonoBehaviour
         subBoard.color = color ?? Color.white;
     }
 
+    public void SetModeBoard(string text = "", Color? color = null)
+    {
+        modeBoard.text = text;
+        modeBoard.color = color ?? Color.white;
+    }
+
     public void Play()
     {
         if(m_nowMode == Mode.Replay)
@@ -104,8 +114,6 @@ public class GameManager : MonoBehaviour
     {
         if(state == State.Select)
         {
-            if(m_nowState != State.Select)
-                ballManager.Init();
             InitForSelect();
         }
         else if(state == State.Judge)
@@ -158,6 +166,7 @@ public class GameManager : MonoBehaviour
     public void SetTeleportState(bool isActive)
     {
         teleportation.SetActive(isActive);
+        teleportPoint.SetActive(isActive);
     }
 
     public void SetActiveTeleport()
@@ -172,8 +181,11 @@ public class GameManager : MonoBehaviour
 
     public void ResetPosition()
     {
-        avater.position = m_refereePos;
-        avater.rotation = m_refereeRot;
+        if(avater.position != m_refereePos)
+        {
+            avater.position = m_refereePos;
+            avater.rotation = m_refereeRot;
+        }
     }
 
     public IEnumerator Vibrate(OVRInput.Controller controller = OVRInput.Controller.Active, float duration = 0.1f, float frequency = 0.3f, float amplitude = 0.3f)
@@ -193,22 +205,33 @@ public class GameManager : MonoBehaviour
     {
         SetMainBoard("Referee Training");
         SetSubBoard();
+        SetModeBoard();
         SetActiveTeleport();
+        menuManger.ActiveUI(State.Select);
+        historyMenu.InactiveUIs();
     }
 
     private void InitForJudge()
     {
         SetMainBoard();
         SetSubBoard();
+        SetModeBoard();
         SetInactiveTeleport();
         ResetPosition();
+        ballManager.Init();
+        menuManger.ActiveUI(State.Judge);
+        historyMenu.InactiveUIs();
     }
 
     private void InitForReplay()
     {
         SetMainBoard("Replay", Color.blue);
         SetSubBoard();
+        SetModeBoard();
         SetActiveTeleport();
+        ballManager.Init();
+        menuManger.ActiveUI(State.Replay);
+        historyMenu.ChangeHistoryToPractice();
     }
 
     private void Start()
@@ -220,18 +243,19 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+
         if(m_nowState == State.Select)
         {
             SetMainBoard("Referee Training");
+            SetModeBoard();
         }
-        else if(m_nowState == State.Judge)
-        {
-            ballManager.UpdateFunction();
-        }
-        else if(m_nowState == State.Replay)
-        {
-            SetMainBoard("Replay", Color.blue);
-            ballManager.UpdateFunction();
-        }
+    //     else if(m_nowState == State.Judge)
+    //     {
+
+    //     }
+    //     else if(m_nowState == State.Replay)
+    //     {
+
+    //     }
     }
 }

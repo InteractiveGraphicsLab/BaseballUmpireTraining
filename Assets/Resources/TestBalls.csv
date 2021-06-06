@@ -1,6 +1,4 @@
-BallType,Velocity,Line,Column
-Fastball,160,3,3
-Curve,150,3,3
-Slider,150,3,3
-Screw,150,3,3
-Fastball,70,3,3
+BallType, Velocity, Line, Column
+Fast, 160, 3, 3
+Fast, 70, 3, 3
+Fast, 200, 3, 3

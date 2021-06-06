@@ -22,8 +22,9 @@ class MyButton
 
 public class MenuController : MonoBehaviour
 {
-    [SerializeField] State state;
     [SerializeField] OVRInput.Button execute = OVRInput.Button.PrimaryIndexTrigger;
+    [SerializeField] bool isInvokeInstantly = false;
+    [SerializeField] float InvokeInterval = 0.8f;
     [SerializeField] OVRInput.Controller controller;
     [SerializeField] GameObject parentCanvas;
     [SerializeField] MenuEvent[] menuData;
@@ -53,6 +54,13 @@ public class MenuController : MonoBehaviour
     private float m_startTime;
     private float m_timeStep;
     private bool m_isShown = false;
+    private bool m_isActive = false;
+    private bool m_isInvoked = false;
+
+    public void SetActive(bool isActive)
+    {
+        m_isActive = isActive;
+    }
 
     private void CalcNowMode(Vector2 trackPadPos)
     {
@@ -170,6 +178,14 @@ public class MenuController : MonoBehaviour
         }
     }
 
+    private IEnumerator Wait(float time)
+    {
+        // if(!m_isInvoked) yield break;
+
+        yield return new WaitForSeconds(time);
+        m_isInvoked = false;
+    }
+
     void Start()
     {
         if(m_menuImagePrefab == null)
@@ -210,9 +226,10 @@ public class MenuController : MonoBehaviour
         // }
         // -----
 
-        if(GameManager.instance.GetNowState() != state)
+        if(!m_isActive)
         {
-            parentCanvas.SetActive(false);
+            m_isShown = false;
+            parentCanvas.SetActive(m_isShown);
             return;
         }
 
@@ -228,12 +245,26 @@ public class MenuController : MonoBehaviour
             CalcNowMode(padPos);
             m_selectorImage.gameObject.SetActive(selected >= 0);
 
-            if(OVRInput.GetDown(execute, controller))
+            if(isInvokeInstantly)
+            {
+                // if (selected < 0)
+                // {
+                //     m_isInvoked = false;
+                // }
+
+                if (!m_isInvoked)
+                {
+                    Execute();
+                    m_isInvoked = true;
+                    StartCoroutine(Wait(InvokeInterval));
+                }
+            }
+            else if (OVRInput.GetDown(execute, controller))
             {
                 Execute();
             }
         }
-        else if(OVRInput.GetUp(OVRInput.Touch.PrimaryThumbstick, controller))
+        else if (OVRInput.GetUp(OVRInput.Touch.PrimaryThumbstick, controller))
         {
             //hide UI
             m_isShown = false;

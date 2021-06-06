@@ -7,7 +7,9 @@ using UnityEngine;
 
 public class BallInfoCSV : IDisposable
 {
-    private StreamWriter m_streamWriter;
+    // private StreamWriter m_streamWriter;
+    private List<string> m_data;
+    private string m_filePath;
 
     public BallInfo[] Load(string fileName)
     {
@@ -23,6 +25,8 @@ public class BallInfoCSV : IDisposable
             //splitText[i] = "<Balltype>,<velocity>,<line>,<column>"
             for(int i = 0; i < splitText.Length; i++)
             {
+                if(String.IsNullOrWhiteSpace(splitText[i])) continue;
+
                 string[] texts = splitText[i].Split(',');
                 BallInfo info = new BallInfo();
 
@@ -51,29 +55,40 @@ public class BallInfoCSV : IDisposable
         return result.ToArray();
     }
 
-    public void EndFile()
+    public void SaveFile()
     {
-        Dispose();
+        // Dispose();
+        using (StreamWriter sw = new StreamWriter(m_filePath, true, Encoding.UTF8))
+        {
+            foreach(string s in m_data)
+            {
+                sw.WriteLine(s);
+            }
+        }
     }
 
-    public void NewFile(string fileName = "BaseballRefereeTraining_History")
+    public void NewFile(string fileName = "BaseballRefereeTraining_Result")
     {
-        m_streamWriter = new StreamWriter(GetPath(AddDate(fileName)), true, Encoding.UTF8) { AutoFlush = true };
-        m_streamWriter.WriteLine("BallType,Velocity,Line,Column,IsCorrect,JudgementTime");
+        // m_streamWriter = new StreamWriter(GetPath(AddDate(fileName)), true, Encoding.UTF8) { AutoFlush = true };
+        // m_streamWriter.WriteLine("BallType,Velocity,Line,Column,IsCorrect,JudgementTime");
+        m_filePath = GetPath(AddDate(fileName));
+        m_data = new List<string>();
+        m_data.Add("BallType,Velocity,Line,Column,IsCorrect,JudgementTime");
     }
 
     public void Write(BallInfo ballInfo, bool isCorrect, float time)
     {
-        string[] data = new string[6];
+        string[] line = new string[6];
 
-        data[0] = ballInfo.type.ToString();
-        data[1] = ballInfo.velocity.ToString();
-        data[2] = ballInfo.line.ToString();
-        data[3] = ballInfo.column.ToString();
-        data[4] = isCorrect ? "Correct" : "Incorrect";
-        data[5] = time.ToString();
+        line[0] = ballInfo.type.ToString();
+        line[1] = ballInfo.velocity.ToString();
+        line[2] = ballInfo.line.ToString();
+        line[3] = ballInfo.column.ToString();
+        line[4] = isCorrect ? "Correct" : "Incorrect";
+        line[5] = time.ToString();
 
-        m_streamWriter.WriteLine(string.Join(",", data));
+        // m_streamWriter.WriteLine(string.Join(",", line));
+        m_data.Add(string.Join(",", line));
     }
 
     private string AddDate(string fileName)
@@ -98,9 +113,9 @@ public class BallInfoCSV : IDisposable
 
     public void Dispose()
     {
-        m_streamWriter.Flush();
-        m_streamWriter.Close();
-        m_streamWriter.Dispose();
+        // m_streamWriter.Flush();
+        // m_streamWriter.Close();
+        // m_streamWriter.Dispose();
     }
 }
 
