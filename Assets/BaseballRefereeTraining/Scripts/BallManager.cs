@@ -100,22 +100,20 @@ public class BallManager : MonoBehaviour
 
     public void Replay(bool isJudge = false)
     {
-        m_replay = !m_replay;
-        if(m_replay)
-        {
-            GameManager.instance.SetModeBoard("Replay", Color.blue);
-        }
-        else
-        {
-            Init();
-            GameManager.instance.SetModeBoard();
-        }
+        m_replay = true;
 
         m_isJudge = isJudge;
         if(m_isJudge)
         {
             GameManager.instance.ResetPosition();
         }
+    }
+
+    public void StopReplay()
+    {
+        m_replay = false;
+        Init();
+        GameManager.instance.SetModeBoard("Replay");
     }
 
     public BallType RandomBalls()

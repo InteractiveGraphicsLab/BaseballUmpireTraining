@@ -134,6 +134,8 @@ public class MenuController : MonoBehaviour
         }
         m_buttons[selected].func = menuData[selected].func[i];
         m_buttons[selected].text.text = menuData[selected].text[i];
+
+        StartCoroutine(GameManager.instance.Vibrate(controller, 0.15f, 0.2f, 0.2f));
     }
 
     private void CreateMenuUI()
@@ -238,6 +240,7 @@ public class MenuController : MonoBehaviour
             //show UI
             m_isShown = true;
             parentCanvas.SetActive(m_isShown);
+            StartCoroutine(GameManager.instance.Vibrate(controller, 0.1f, 0.1f, 0.1f));
         }
         else if (m_isShown && OVRInput.Get(OVRInput.Touch.PrimaryThumbstick, controller))
         {
@@ -273,6 +276,11 @@ public class MenuController : MonoBehaviour
 
         if(selectedBuf != selected)
         {
+            if (selected >= 0)
+            {
+                StartCoroutine(GameManager.instance.Vibrate(controller, 0.1f, 0.2f, 0.2f));
+            }
+
             m_startTime = Time.time;
 
             for(int i = 0; i < m_buttons.Count; i++)

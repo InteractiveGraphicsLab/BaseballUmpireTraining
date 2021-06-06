@@ -31,6 +31,7 @@ public class HistoryMenu : MonoBehaviour
     [SerializeField] Transform testParent;
     [SerializeField] Scrollbar practiceScrollbar;
     [SerializeField] Scrollbar testScrollbar;
+    [SerializeField] Text header;
     [SerializeField] BallManager ballManager;
     [SerializeField] GameObject panelPrefab;
     [SerializeField] float parentHeight;
@@ -55,6 +56,7 @@ public class HistoryMenu : MonoBehaviour
     {
         practiceObject.SetActive(false);
         testObject.SetActive(false);
+        header.gameObject.SetActive(false);
     }
 
     public void ChangeHistoryToPractice()
@@ -76,14 +78,17 @@ public class HistoryMenu : MonoBehaviour
                 m_nowHistory = m_practiceHistory;
                 m_nowScrollbar = practiceScrollbar;
                 practiceObject.SetActive(true);
+                header.text = "Practice";
                 break;
             case Mode.Test:
                 m_nowHistory = m_testHistory;
                 m_nowScrollbar = testScrollbar;
                 testObject.SetActive(true);
+                header.text = "Test";
                 break;
         }
 
+        header.gameObject.SetActive(true);
         m_selected = m_nowHistory.Count - 1;
         m_topIndex = m_nowHistory.Count - 1;
         Reflesh();
@@ -252,7 +257,7 @@ public class HistoryMenu : MonoBehaviour
         if(m_scrollUp)
         {
             m_nowScrollbar.value = Mathf.Lerp(m_minHeight, m_maxHeight, m_t);
-            m_t += 1.5f * Time.deltaTime;
+            m_t += 2f * Time.deltaTime;
 
             if (m_t > 1)
             {
@@ -263,7 +268,7 @@ public class HistoryMenu : MonoBehaviour
         if(m_scrollDown)
         {
             m_nowScrollbar.value = Mathf.Lerp(m_minHeight, m_maxHeight, m_t);
-            m_t -= 1.5f * Time.deltaTime;
+            m_t -= 2f * Time.deltaTime;
 
             if(m_t < 0)
             {
