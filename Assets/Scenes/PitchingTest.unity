@@ -602,7 +602,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!23 &1403209905
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -663,6 +663,70 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 11
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1503599364
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1503599366}
+  - component: {fileID: 1503599365}
+  m_Layer: 0
+  m_Name: Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1503599365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1503599364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61a9735d35325814698d64a779ef0cd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isSkipWaitTimeInPractice: 1
+  isSkipWaitTimeInTest: 0
+  ball: {fileID: 1990599804}
+  motion: {fileID: 1957304521}
+  strikeZone: {fileID: 2066848167}
+  historyMenu: {fileID: 0}
+  head: {fileID: 0}
+  judgeController: {fileID: 0}
+  strikeJudgeInput: 16384
+  PauseInput: 8192
+  controller: 2
+  subController: 1
+  resultTime: 2
+  strikeText: Strike
+  ballText: Ball
+  defualtTextColor: {r: 1, g: 1, b: 1, a: 1}
+  pauseTextColor: {r: 0, g: 1, b: 0, a: 1}
+  correctTextColor: {r: 1, g: 1, b: 1, a: 1}
+  incorrectTextColor: {r: 1, g: 0, b: 0, a: 1}
+  fileName: TestBalls
+  trailTime: 5
+--- !u!4 &1503599366
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1503599364}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.017260969, y: 0.90023655, z: -0.3873614}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1702274967
 GameObject:
@@ -741,7 +805,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1702274967}
   m_LocalRotation: {x: 0.09729996, y: -0, z: -0, w: 0.9952552}
-  m_LocalPosition: {x: 0, y: 1.7, z: -4}
+  m_LocalPosition: {x: 0, y: 1.371, z: -2.335}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -844,11 +908,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400234, guid: 6db9a521926cab74cacb15818167e42e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.245
       objectReference: {fileID: 0}
     - target: {fileID: 400234, guid: 6db9a521926cab74cacb15818167e42e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 18.44
+      value: 17.9
       objectReference: {fileID: 0}
     - target: {fileID: 400234, guid: 6db9a521926cab74cacb15818167e42e, type: 3}
       propertyPath: m_LocalRotation.x
@@ -884,15 +948,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400234, guid: 6db9a521926cab74cacb15818167e42e, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.01
+      value: 0.009
       objectReference: {fileID: 0}
     - target: {fileID: 400234, guid: 6db9a521926cab74cacb15818167e42e, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.01
+      value: 0.009
       objectReference: {fileID: 0}
     - target: {fileID: 400234, guid: 6db9a521926cab74cacb15818167e42e, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.01
+      value: 0.009
       objectReference: {fileID: 0}
     - target: {fileID: 2300012, guid: 6db9a521926cab74cacb15818167e42e, type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -1027,7 +1091,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae5dbfe90eca2cd4aa48f4c30ee7350d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animationLayerName: 
+  animationLayerName: Pitcher_pitch_state
   animationBoolSymbol: start
 --- !u!1 &1990599803
 GameObject:
@@ -1062,7 +1126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d687711441c83b48b8ceab3b7198089, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ballManager: {fileID: 0}
+  ballManager: {fileID: 1503599365}
   waitTime: 2.3
   minVelocityFast: 110
   maxVelocityFast: 160
@@ -1072,8 +1136,8 @@ MonoBehaviour:
   maxVelocitySlider: 140
   minVelocityScrew: 100
   maxVelocityScrew: 140
-  transparentMat: {fileID: 0}
-  ballTextureMat: {fileID: 0}
+  transparentMat: {fileID: 2100000, guid: 09111d010bd451245b644b35d4d4cfc8, type: 2}
+  ballTextureMat: {fileID: 2100000, guid: 146c06d35d2a0ab478310b6b925b7d79, type: 2}
 --- !u!135 &1990599805
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1380,10 +1444,10 @@ MonoBehaviour:
   centerPosition: {x: 0, y: 0.7, z: 0}
   strikeZoneWidth: 0.432
   strikeZoneHeight: 0.6
-  verticalDivisionNumber: 4
-  horizontalDivisionNumber: 4
-  verticalBallZoneOffset: 1
-  horizontalBallZoneOffset: 1
+  verticalDivisionNumber: 8
+  horizontalDivisionNumber: 8
+  verticalBallZoneOffset: 3
+  horizontalBallZoneOffset: 3
   mainLineWidth: 0.01
   subLineWidth: 0.001
   zoneZScale: 0.001

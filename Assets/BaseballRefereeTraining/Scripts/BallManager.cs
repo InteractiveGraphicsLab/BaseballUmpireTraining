@@ -17,7 +17,12 @@ public class BallInfo
     public int column;
     public bool isStrike;
 
-    public BallInfo(){}
+    public BallInfo()
+    : this(BallType.Fast, 150f, 0, 0, true){}
+
+    public BallInfo(BallInfo i)
+    : this(i.type, i.velocity, i.line, i.column, i.isStrike){}
+
     public BallInfo(BallType _type, float _velo, int _line, int _col, bool _str)
     {
         type = _type;
@@ -26,17 +31,8 @@ public class BallInfo
         column = _col;
         isStrike = _str;
     }
-    public BallInfo(BallInfo info)
-    {
-        type = info.type;
-        velocity = info.velocity;
-        line = info.line;
-        column = info.column;
-        isStrike = info.isStrike;
-    }
 }
 
-// 7分割前提
 public class BallManager : MonoBehaviour
 {
     [SerializeField] bool isSkipWaitTimeInPractice = true;
@@ -44,7 +40,7 @@ public class BallManager : MonoBehaviour
 
     [SerializeField] BallSimulator ball;
     [SerializeField] Motion motion;
-    [SerializeField] BatterZoneManager batterZone;
+    [SerializeField] StrikeZoneManager strikeZone;
     [SerializeField] HistoryMenu historyMenu;
     [SerializeField] Transform head;
     [SerializeField] Transform judgeController;
@@ -64,11 +60,14 @@ public class BallManager : MonoBehaviour
     [SerializeField] string fileName = "TestBalls";
     [SerializeField] float trailTime = 5f;
 
-    private BallType thisBall;
-    private float thisVelocity;
-    private int thisTargetLine;
-    private int thisTargetcolumn;
-    private Vector3 thisZonePos;
+    public StrikeZoneProperty strikeZoneProperty { get; private set; }
+
+    private BallType m_thisBall;
+    private float m_thisVelocity;
+    private int m_thisTargetLine;
+    private int m_thisTargetColumn;
+    private Vector3 m_thisZonePos;
+    private bool m_isStrike;
 
     private BallInfoCSV m_csv;
     private BallInfo[] m_order;
@@ -79,24 +78,26 @@ public class BallManager : MonoBehaviour
     private bool m_judging = false;
     private bool m_replay = false;
     private bool m_isPause = false;
-    private bool m_isStrike;
 
     private bool m_isJudge = true;
+
+    public void SetStrikeZoneProperty(StrikeZoneProperty s)
+    {
+        strikeZoneProperty = s;
+    }
 
     public void Init()
     {
         m_initFlag = true;
         m_judging = false;
-
         m_replay = false;
-
         m_isPause = false;
         ball.Init();
         motion.Init();
         ball.Pause(m_isPause);
         motion.Pause(m_isPause);
         ball.InitPosition();
-        batterZone.HideBallTrace();
+        strikeZone.HideBallTrace();
     }
 
     public void Replay(bool isJudge = false)
@@ -112,7 +113,6 @@ public class BallManager : MonoBehaviour
 
     public void StopReplay()
     {
-        m_replay = false;
         Init();
         GameManager.instance.SetModeBoard("Replay");
     }
@@ -149,13 +149,11 @@ public class BallManager : MonoBehaviour
 
     public void EndPitching(float velocity, int line, int column, Vector3 zpos)
     {
-        // todo ここが7分割前提
-        line = 6 - line;
-        thisTargetLine = line;
-        thisTargetcolumn = column;
-        thisVelocity = velocity;
-        m_isStrike = 5 > line && line > 1 && 5 > column && column > 1;
-        thisZonePos = zpos;
+        m_thisTargetLine = line;
+        m_thisTargetColumn = column;
+        m_isStrike = strikeZoneProperty.IsStrike(line, column);
+        m_thisVelocity = velocity;
+        m_thisZonePos = zpos;
     }
 
     //strike: true
@@ -163,7 +161,7 @@ public class BallManager : MonoBehaviour
     private void Judge(bool userJudgement, float JudgementTime = 0)
     {
         bool isCorrectAns = m_isStrike == userJudgement;
-        BallInfo info = new BallInfo(thisBall, thisVelocity, thisTargetLine, thisTargetcolumn, m_isStrike);
+        BallInfo info = new BallInfo(m_thisBall, m_thisVelocity, m_thisTargetLine, m_thisTargetColumn, m_isStrike);
 
         GameManager.instance.SetMainBoard(m_isStrike ? strikeText : ballText, isCorrectAns ? correctTextColor : incorrectTextColor);
         if(!isCorrectAns) StartCoroutine(GameManager.instance.Vibrate(controller, 0.5f));
@@ -173,7 +171,7 @@ public class BallManager : MonoBehaviour
         if(GameManager.instance.GetNowMode() == Mode.Test)
             m_csv.Write(info, isCorrectAns, JudgementTime);
 
-        string ballInfoText = thisBall.ToString() + "\n" + thisVelocity.ToString("00.0") + " km/s";
+        string ballInfoText = m_thisBall.ToString() + "\n" + m_thisVelocity.ToString("00.0") + " km/s";
         GameManager.instance.SetSubBoard(ballInfoText);
 
         historyMenu.AddHistory(info, isCorrectAns, GameManager.instance.GetNowMode());
@@ -198,8 +196,8 @@ public class BallManager : MonoBehaviour
         {
             if (!motion.IsAnimating() || isSkipWaitTimeInPractice)
             {
-                thisBall = RandomBalls();
-                SetBallParameter(thisBall);
+                m_thisBall = RandomBalls();
+                SetBallParameter(m_thisBall);
                 ball.Trail();
                 StartPitching();
                 m_judging = true;
@@ -212,12 +210,12 @@ public class BallManager : MonoBehaviour
             if (head.localPosition.y - 0.15f < judgeController.localPosition.y)
             {
                 Judge(true, m_judgementTime);
-                batterZone.ShowBallTrace(thisZonePos);
+                strikeZone.ShowBallTrace(m_thisZonePos);
                 StartCoroutine(GameManager.instance.Wait(resultTime, () =>
                 {
                     GameManager.instance.SetMainBoard();
                     GameManager.instance.SetSubBoard();
-                    batterZone.HideBallTrace();
+                    strikeZone.HideBallTrace();
                 }));
                 m_judging = false;
             }
@@ -225,12 +223,12 @@ public class BallManager : MonoBehaviour
             else
             {
                 Judge(false, m_judgementTime);
-                batterZone.ShowBallTrace(thisZonePos);
+                strikeZone.ShowBallTrace(m_thisZonePos);
                 StartCoroutine(GameManager.instance.Wait(resultTime, () =>
                 {
                     GameManager.instance.SetMainBoard();
                     GameManager.instance.SetSubBoard();
-                    batterZone.HideBallTrace();
+                    strikeZone.HideBallTrace();
                 }));
                 m_judging = false;
             }
@@ -271,8 +269,8 @@ public class BallManager : MonoBehaviour
                 else
                 {
                     BallInfo info = m_order[m_orderIndex++];
-                    thisBall = info.type;
-                    SetBallParameter(thisBall, info.velocity, info.line, info.column);
+                    m_thisBall = info.type;
+                    SetBallParameter(m_thisBall, info.velocity, info.line, info.column);
                     StartPitching();
                     m_judgementTime = 0;
                     m_judging = true;
@@ -321,8 +319,8 @@ public class BallManager : MonoBehaviour
                 BallInfo info = historyMenu.GetSelectedBallInfo();
                 if(info.type != null)
                 {
-                    thisBall = info.type;
-                    SetBallParameter(thisBall, info.velocity, info.line, info.column);
+                    m_thisBall = info.type;
+                    SetBallParameter(m_thisBall, info.velocity, info.line, info.column);
                     ball.Trail(m_isJudge ? 0 : trailTime);
                     StartPitching();
                     m_judging = m_isJudge;
@@ -360,7 +358,7 @@ public class BallManager : MonoBehaviour
         }
         else
         {
-            batterZone.ShowBatterZone();
+            strikeZone.ShowStrikeZone();
         }
     }
 
@@ -372,6 +370,11 @@ public class BallManager : MonoBehaviour
 
     private void Update()
     {
+        if(strikeZoneProperty == null)
+        {
+            strikeZoneProperty = strikeZone.GetProperty();
+        }
+
         if(GameManager.instance.GetNowState() == State.Select) return;
 
         if(m_isPause)

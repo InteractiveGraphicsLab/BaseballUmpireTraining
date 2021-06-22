@@ -5,11 +5,11 @@ using UnityEngine;
 
 public static class Param
 {
-    public static Vector3 zonePosLB = new Vector3(-0.43f * 3.5f / 3.0f, 0, 0);
+    // public static Vector3 zonePosLB = new Vector3(-0.43f * 3.5f / 3.0f, 0, 0);
     // public static Vector3 zonePosLB = new Vector3(-0.43f * 3.5f / 3.0f, 0, -0.43f);
-    public static float zoneWidth = 0.43f / 3.0f * 7.0f;
-    public static float zoneHeight = 1.4f;
-    public static int zoneDivNum = 7;
+    // public static float zoneWidth = 0.43f / 3.0f * 7.0f;
+    // public static float zoneHeight = 1.4f;
+    // public static int zoneDivNum = 7;
 
     public static Vector3 GRAVITY = new Vector3(0, -9.8f, 0);
     public static float   WEIGHT = 0.140f;
@@ -48,6 +48,7 @@ public static class Param
 public class BallDirection
 {
     public static Quaternion calcBallInitialRotation(
+         StrikeZoneProperty property,
          Vector3    initPosition,
          Vector3    initVelocity,
          Quaternion initRotation,
@@ -57,8 +58,8 @@ public class BallDirection
          int targetYi
          )
      {
-        float targetX = (Param.zoneWidth  / Param.zoneDivNum) * (targetXi + 0.5f) + Param.zonePosLB[0];
-        float targetY = (Param.zoneHeight / Param.zoneDivNum) * (targetYi + 0.5f) + Param.zonePosLB[1];
+        float targetX = property.panelSize.x * (targetXi + 0.5f) + (property.centerPosition.x - property.zoneSize.x / 2f);
+        float targetY = property.panelSize.y * (targetYi + 0.5f) + (property.centerPosition.y - property.zoneSize.y / 2f);
 
         Quaternion rot = initRotation;
 
@@ -74,25 +75,27 @@ public class BallDirection
                 v += (Param.GRAVITY + force / Param.WEIGHT) * dt;
                 p += v * dt;
 
-                if (prePos[2] >= Param.zonePosLB[2] && Param.zonePosLB[2] >= p[2])
+                if (prePos.z >= property.centerPosition.z && property.centerPosition.z >= p.z)
                 {
-                    float t = (Param.zonePosLB[2] - p[2]) / (prePos[2] - p[2]);
+                    float t = (property.centerPosition.z - p.z) / (prePos.z - p.z);
                     p = p + t * (prePos - p);
                     break;
                 }
             }
 
             //補正
-            //Debug.Log(trial + " COMPUTATION!! " + p + targetX + " " + targetY);
+            // Debug.Log(trial + " COMPUTATION!! " + p + " " + targetX + " " + targetY);
 
             //rotを更新
-            float dx = targetX - p[0];
-            float dy = targetY - p[1];
-            float L = 18.44f - Param.zonePosLB[2];
+            float dx = targetX - p.x;
+            float dy = targetY - p.y;
+            // todo
+            float L = 18.44f - property.centerPosition.z;
             float angleX = Mathf.Atan(dx / L) / Mathf.PI * 180;
             float angleY = Mathf.Atan(dy / L) / Mathf.PI * 180;
             rot = Quaternion.Euler(angleY, -angleX, 0) * rot;
         }
+
         return rot;
     }
 }
@@ -174,6 +177,37 @@ public class BallSimulator : MonoBehaviour
         m_timecount = 0;
     }
 
+    private int[] RandomTarget()
+    {
+        StrikeZoneProperty property = ballManager.strikeZoneProperty;
+        int[] target = new int[2];
+
+        if(Random.value <= 0.5f)
+        {
+            //strike
+            target[0] = Random.Range(property.horiOffset + 1, property.horiOffset + property.horiDivNum);
+            target[1] = Random.Range(property.vertOffset + 1, property.vertOffset + property.vertDivNum);
+        }
+        else
+        {
+            //ball
+            target[0] = Random.Range(0, property.horiOffset * 2);
+            if(target[0] > property.horiOffset - 1) target[0] += property.horiDivNum;
+            target[1] = Random.Range(0, property.vertOffset * 2);
+            if(target[1] > property.vertOffset - 1) target[1] += property.vertDivNum;
+        }
+
+        return target;
+    }
+
+    private void SetParameterForBreakingball(Vector3 pos, Vector3 velo, Quaternion rotVelo, Vector3 force, int line, int colunm)
+    {
+        Quaternion q = BallDirection.calcBallInitialRotation(ballManager.strikeZoneProperty, pos, velo, rotVelo, force, m_dt, line, colunm);
+        m_nextPos   = pos;
+        m_nextVelo  = q * velo;
+        m_nextForce = force;
+    }
+
     public void Fastball(float velocity = 0f, int line = -1, int colunm = -1)
     {
         if(velocity == 0f)
@@ -183,7 +217,7 @@ public class BallSimulator : MonoBehaviour
         }
         m_velocityBuff = velocity;
 
-        if((Param.zoneDivNum <= line || line < 0) || (Param.zoneDivNum <= colunm || colunm < 0))
+        if(!ballManager.strikeZoneProperty.IsInZone(line, colunm))
         {
             int[] target = RandomTarget();
             line = target[0];
@@ -204,13 +238,13 @@ public class BallSimulator : MonoBehaviour
         }
         m_velocityBuff = velocity;
 
-        if((Param.zoneDivNum <= line || line < 0) || (Param.zoneDivNum <= colunm || colunm < 0))
+        if(!ballManager.strikeZoneProperty.IsInZone(line, colunm))
         {
             int[] target = RandomTarget();
             line = target[0];
             colunm = target[1];
             target = null;
-            // Debug.Log("Curveball line, column: (" + line + ", " + colunm + ")");
+            Debug.Log("Curveball line, column: (" + line + ", " + colunm + ")");
         }
 
         SetParameterForBreakingball(Param.initPosition, new Vector3(0, 0, velocity * -1000.0f / 3600.0f), Param.rotCurve, Param.forceCurve, line, colunm);
@@ -225,13 +259,13 @@ public class BallSimulator : MonoBehaviour
         }
         m_velocityBuff = velocity;
 
-        if((Param.zoneDivNum <= line || line < 0) || (Param.zoneDivNum <= colunm || colunm < 0))
+        if(!ballManager.strikeZoneProperty.IsInZone(line, colunm))
         {
             int[] target = RandomTarget();
             line = target[0];
             colunm = target[1];
             target = null;
-            // Debug.Log("Sliderball line, column: (" + line + ", " + colunm + ")");
+            Debug.Log("Sliderball line, column: (" + line + ", " + colunm + ")");
         }
 
         SetParameterForBreakingball(Param.initPosition, new Vector3(0, 0, velocity * -1000.0f / 3600.0f), Param.rotSlider, Param.forceSlider, line, colunm);
@@ -246,46 +280,16 @@ public class BallSimulator : MonoBehaviour
         }
         m_velocityBuff = velocity;
 
-        if((Param.zoneDivNum <= line || line < 0) || (Param.zoneDivNum <= colunm || colunm < 0))
+        if(!ballManager.strikeZoneProperty.IsInZone(line, colunm))
         {
             int[] target = RandomTarget();
             line = target[0];
             colunm = target[1];
             target = null;
-            // Debug.Log("Screwball line, column: (" + line + ", " + colunm + ")");
+            Debug.Log("Screwball line, column: (" + line + ", " + colunm + ")");
         }
 
         SetParameterForBreakingball(Param.initPosition, new Vector3(0, 0, velocity * -1000.0f / 3600.0f), Param.rotScrew, Param.forceScrew, line, colunm);
-    }
-
-    //todo: 7分割，2,3,4がストライク前提
-    private int[] RandomTarget()
-    {
-        int[] target = new int[2];
-
-        if(Random.value <= 0.5f)
-        {
-            //strike
-            target[0] = Random.Range(2, 5);
-            target[1] = Random.Range(2, 5);
-        }
-        else
-        {
-            target[0] = Random.Range(0, 4);
-            if(target[0] > 1) target[0] += 3;
-            target[1] = Random.Range(0, 4);
-            if(target[1] > 1) target[1] += 3;
-        }
-
-        return target;
-    }
-
-    private void SetParameterForBreakingball(Vector3 pos, Vector3 velo, Quaternion rotVelo, Vector3 force, int line, int colunm)
-    {
-        Quaternion q = BallDirection.calcBallInitialRotation(pos, velo, rotVelo, force, m_dt, line, colunm);
-        m_nextPos   = pos;
-        m_nextVelo  = q * velo;
-        m_nextForce = force;
     }
 
     private void Start() {
@@ -297,30 +301,30 @@ public class BallSimulator : MonoBehaviour
 
     private void Update()
     {
-        // if (Input.GetKeyDown(KeyCode.Alpha1))
-        // {
-        //     Fastball();
-        //     //StartPitching();
-        // }
-        // else if (Input.GetKeyDown(KeyCode.Alpha2))
-        // {
-        //     Curveball();
-        //     //StartPitching();
-        // }
-        // else if (Input.GetKeyDown(KeyCode.Alpha3))
-        // {
-        //     Sliderball();
-        //     //StartPitching();
-        // }
-        // else if (Input.GetKeyDown(KeyCode.Alpha4))
-        // {
-        //     Screwball();
-        //     //StartPitching();
-        // }
-        // else if (Input.GetKeyDown(KeyCode.Alpha6))
-        // {
-        //     StartPitching();
-        // }
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            Fastball();
+            //StartPitching();
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            Curveball();
+            //StartPitching();
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            Sliderball();
+            //StartPitching();
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            Screwball();
+            //StartPitching();
+        }
+        else if (Input.GetKeyDown(KeyCode.Space))
+        {
+            StartPitching();
+        }
     }
 
     // Update is called once per frame
@@ -356,14 +360,18 @@ public class BallSimulator : MonoBehaviour
             this.transform.localPosition = m_pos;
 
             //zoneを跨いだ瞬間
-            if (m_prevPos.z > Param.zonePosLB.z && Param.zonePosLB.z >= m_pos.z)
+            float z = ballManager.strikeZoneProperty.centerPosition.z;
+            if (m_prevPos.z > z && z >= m_pos.z)
             {
                 //内分点の計算
-                float a = (Param.zonePosLB.z - m_pos.z) / (m_prevPos.z - m_pos.z);
+                float a = (z - m_pos.z) / (m_prevPos.z - m_pos.z);
                 Vector3 zp = m_pos + (a * (m_prevPos - m_pos));
 
-                int xi = (int)((zp.x - Param.zonePosLB.x) / Param.zoneWidth * Param.zoneDivNum);
-                int yi = (int)((zp.y - Param.zonePosLB.y) / Param.zoneHeight * Param.zoneDivNum);
+                StrikeZoneProperty p = ballManager.strikeZoneProperty;
+                float LBx = p.centerPosition.x - p.zoneSize.x / 2f;
+                float LBy = p.centerPosition.y - p.zoneSize.y / 2f;
+                int xi = (int)((zp.x - LBx) / p.size.x * p.horiPanelNum);
+                int yi = (int)((zp.y - LBy) / p.size.y * p.vertPanelNum);
 
                 // Debug.Log("ゾーン到達点のposの座標 " + zp);
                 // Debug.Log("ゾーン到達点のposの座標 " + xi + " " + yi);
