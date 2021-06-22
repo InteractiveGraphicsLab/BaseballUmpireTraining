@@ -66,7 +66,7 @@ public class BatterZoneManager : MonoBehaviour
                 panel.transform.localScale = new Vector3(lineSize, colunmSize, 0.001f);
                 isStrikeZone = 2 <= i && i <= 4 && 2 <= j && j <= 4;
                 m_batterZones[i * divNum + j] = panel.AddComponent<BatterZoneComponent>();
-                m_batterZones[i * divNum + j].Init(this, i * divNum + j, isStrikeZone, isStrikeZone ? strikeMat : ballMat);
+                // m_batterZones[i * divNum + j].Init(this, i * divNum + j, isStrikeZone, isStrikeZone ? strikeMat : ballMat);
             }
         }
     }

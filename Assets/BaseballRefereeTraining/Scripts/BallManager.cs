@@ -96,6 +96,7 @@ public class BallManager : MonoBehaviour
         ball.Pause(m_isPause);
         motion.Pause(m_isPause);
         ball.InitPosition();
+        batterZone.HideBallTrace();
     }
 
     public void Replay(bool isJudge = false)
@@ -241,7 +242,7 @@ public class BallManager : MonoBehaviour
     // -------------------------
     private void Test()
     {
-        if(m_judging)
+        if(!ball.IsPitching() && m_judging)
             m_judgementTime += Time.deltaTime;
 
         // if (!ball.IsPitching())
@@ -254,7 +255,6 @@ public class BallManager : MonoBehaviour
             if (m_initFlag)
             {
                 m_orderIndex = 0;
-                m_judgementTime = 0;
                 ball.Trail();
                 m_csv.NewFile();
                 m_initFlag = false;
@@ -274,6 +274,7 @@ public class BallManager : MonoBehaviour
                     thisBall = info.type;
                     SetBallParameter(thisBall, info.velocity, info.line, info.column);
                     StartPitching();
+                    m_judgementTime = 0;
                     m_judging = true;
                 }
             }
@@ -284,24 +285,24 @@ public class BallManager : MonoBehaviour
             //Select Strike
             if (head.localPosition.y - 0.15f < judgeController.localPosition.y)
             {
+                m_judging = false;
                 Judge(true, m_judgementTime);
                 StartCoroutine(GameManager.instance.Wait(resultTime, () =>
                 {
                     GameManager.instance.SetMainBoard();
                     GameManager.instance.SetSubBoard();
                 }));
-                m_judging = false;
             }
             //Select Ball
             else
             {
+                m_judging = false;
                 Judge(false, m_judgementTime);
                 StartCoroutine(GameManager.instance.Wait(resultTime, () =>
                 {
                     GameManager.instance.SetMainBoard();
                     GameManager.instance.SetSubBoard();
                 }));
-                m_judging = false;
             }
         }
     }

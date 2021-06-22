@@ -247,7 +247,7 @@ public class GameManager : MonoBehaviour
     {
         //todo
         Vector3 pos = avater.transform.localPosition;
-        float y = pos.y - 0.5f;
+        float y = pos.y - 0.3f;
         if(y < 0) y = 0;
         avater.transform.localPosition = new Vector3(avater.transform.localPosition.x, y, avater.transform.localPosition.z);
 

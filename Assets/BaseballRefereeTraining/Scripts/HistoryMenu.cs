@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Runtime.InteropServices;
 
 public class HistoryComponent
 {
@@ -25,6 +26,7 @@ public class HistoryComponent
 
 public class HistoryMenu : MonoBehaviour
 {
+    [SerializeField] bool isDebug = false;
     [SerializeField] GameObject practiceObject;
     [SerializeField] GameObject testObject;
     [SerializeField] Transform practiceParent;
@@ -32,9 +34,10 @@ public class HistoryMenu : MonoBehaviour
     [SerializeField] Scrollbar practiceScrollbar;
     [SerializeField] Scrollbar testScrollbar;
     [SerializeField] Text header;
-    [SerializeField] BallManager ballManager;
+    // [SerializeField] BallManager ballManager;
     [SerializeField] GameObject panelPrefab;
     [SerializeField] float parentHeight;
+    [SerializeField] float scrollSpeed = 3f;
 
     private List<HistoryComponent> m_practiceHistory;
     private List<HistoryComponent> m_testHistory;
@@ -207,16 +210,25 @@ public class HistoryMenu : MonoBehaviour
         }
     }
 
-    private void SetComponent(HistoryComponent com, Mode mode)
+    private void SetComponent(HistoryComponent com, ref List<HistoryComponent> list)
     {
-        switch(mode)
+        int falseCount = 0;
+        foreach(HistoryComponent h in list)
         {
-            case Mode.Practice:
-                m_practiceHistory.Add(com);
-                break;
-            case Mode.Test:
-                m_testHistory.Add(com);
-                break;
+            if(!h.isCorrect) falseCount++;
+        }
+
+        if(com.isCorrect)
+        {
+            //correct
+            com.panel.gameObject.transform.SetSiblingIndex(falseCount);
+            list.Insert(list.Count - falseCount, com);
+        }
+        else
+        {
+            //incorrect
+            com.panel.gameObject.transform.SetAsFirstSibling();
+            list.Add(com);
         }
     }
 
@@ -227,10 +239,18 @@ public class HistoryMenu : MonoBehaviour
         panelObj.transform.localPosition = Vector3.zero;
         panelObj.transform.localRotation = Quaternion.identity;
         panelObj.transform.localScale = Vector3.one;
-        panelObj.transform.SetAsFirstSibling();
+        // panelObj.transform.SetAsFirstSibling();
         Panel panel = panelObj.GetComponent<Panel>();
         panel.SetPanel(info.type.ToString(), info.velocity.ToString("00.0") + "km/s", isCorrect, info.isStrike);
-        SetComponent(new HistoryComponent(info, isCorrect, panel), mode);
+        switch(mode)
+        {
+            case Mode.Practice:
+                SetComponent(new HistoryComponent(info, isCorrect, panel), ref m_practiceHistory);
+                break;
+            case Mode.Test:
+                SetComponent(new HistoryComponent(info, isCorrect, panel), ref m_testHistory);
+                break;
+        }
         Reflesh();
     }
 
@@ -240,16 +260,25 @@ public class HistoryMenu : MonoBehaviour
         {
             m_nowHistory[i].panel.Selected(i == m_selected);
         }
+
+    }
+
+    private void AddTestData()
+    {
+        for(int i = 0; i < 13; ++i)
+            AddHistory(new BallInfo(BallType.Fast, 100f + 10f * i, 3, 3, i % 3 == 0), i % 3 == 1, Mode.Practice);
     }
 
     void Start()
     {
-        // m_nowHistory = new List<HistoryComponent>();
         m_practiceHistory = new List<HistoryComponent>();
         m_testHistory = new List<HistoryComponent>();
         m_nowHistory = new List<HistoryComponent>();
         m_panelHeight = panelPrefab.GetComponent<RectTransform>().sizeDelta.y;
         m_maxCapacity = (int)(parentHeight / m_panelHeight);
+        if(isDebug) AddTestData();
+
+        ChangeHistory(Mode.Practice);
     }
 
     void Update()
@@ -257,7 +286,7 @@ public class HistoryMenu : MonoBehaviour
         if(m_scrollUp)
         {
             m_nowScrollbar.value = Mathf.Lerp(m_minHeight, m_maxHeight, m_t);
-            m_t += 2f * Time.deltaTime;
+            m_t += scrollSpeed * Time.deltaTime;
 
             if (m_t > 1)
             {
@@ -268,11 +297,23 @@ public class HistoryMenu : MonoBehaviour
         if(m_scrollDown)
         {
             m_nowScrollbar.value = Mathf.Lerp(m_minHeight, m_maxHeight, m_t);
-            m_t -= 2f * Time.deltaTime;
+            m_t -= scrollSpeed * Time.deltaTime;
 
             if(m_t < 0)
             {
                 m_scrollDown = false;
+            }
+        }
+
+        if(isDebug)
+        {
+            if(Input.GetKeyDown(KeyCode.W))
+            {
+                Back();
+            }
+            else if(Input.GetKeyDown(KeyCode.S))
+            {
+                Next();
             }
         }
     }

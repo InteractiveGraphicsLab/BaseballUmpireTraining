@@ -5,7 +5,8 @@ using UnityEngine;
 
 public static class Param
 {
-    public static Vector3 zonePosLB = new Vector3(-0.43f * 3.5f / 3.0f, 0, -0.43f);
+    public static Vector3 zonePosLB = new Vector3(-0.43f * 3.5f / 3.0f, 0, 0);
+    // public static Vector3 zonePosLB = new Vector3(-0.43f * 3.5f / 3.0f, 0, -0.43f);
     public static float zoneWidth = 0.43f / 3.0f * 7.0f;
     public static float zoneHeight = 1.4f;
     public static int zoneDivNum = 7;
@@ -15,7 +16,7 @@ public static class Param
     public static float   BASE_Z = -0.6f;
 
     //変化球情報
-    public static Vector3 initPosition    = new Vector3(-0.2f, 2.1f, 17.6f);
+    public static Vector3 initPosition    = new Vector3(-0.2f, 2f, 17.6f);
     // public static Vector3 initPosition    = new Vector3(-0.23f, 1.86f, 17.53f);
 
     //初速度

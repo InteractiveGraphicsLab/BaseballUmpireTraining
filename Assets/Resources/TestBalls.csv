@@ -1,4 +1,17 @@
 BallType, Velocity, Line, Column
-Fast, 160, 3, 3
-Fast, 70, 3, 3
-Fast, 200, 3, 3
+Fast,110,5,5
+Curve,90,2,3
+Fast,110,4,3
+Slider,100,5,1
+Screw,100,1,4
+Curve,90,2,4
+Fast,110,4,2
+Curve,90,1,2
+Screw,100,5,3
+Fast,110,5,5
+Slider,100,3,2
+Screw,100,2,1
+Curve,90,4,1
+Curve,90,2,2
+Fast,110,3,5
+Slider,100,4,2
