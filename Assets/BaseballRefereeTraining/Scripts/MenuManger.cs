@@ -31,6 +31,7 @@ public class MenuManger : MonoBehaviour
                 break;
             case State.Replay:
                 m_menuCons[2].SetActive(true);
+                m_menuCons[3].SetActive(true);
                 break;
         }
 
@@ -45,18 +46,20 @@ public class MenuManger : MonoBehaviour
     void Update()
     {
         //todo
-        if(m_nowState == State.Replay)
-        {
-            if(OVRInput.Get(subExecute, controller))
-            {
-                m_menuCons[2].SetActive(false);
-                m_menuCons[3].SetActive(true);
-            }
-            else
-            {
-                m_menuCons[3].SetActive(false);
-                m_menuCons[2].SetActive(true);
-            }
-        }
+        // if(m_nowState == State.Replay)
+        // {
+        //     if(OVRInput.Get(subExecute, controller))
+        //     {
+        //         m_menuCons[2].SetActive(false);
+        //         m_menuCons[3].SetActive(true);
+        //     }
+        //     else
+        //     {
+        //         m_menuCons[3].SetActive(false);
+        //         m_menuCons[2].SetActive(true);
+        //     }
+        // }
+
+
     }
 }

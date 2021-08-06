@@ -81,13 +81,13 @@ public class HistoryMenu : MonoBehaviour
                 m_nowHistory = m_practiceHistory;
                 m_nowScrollbar = practiceScrollbar;
                 practiceObject.SetActive(true);
-                header.text = "Practice";
+                header.text = "Random Pitching";
                 break;
             case Mode.Test:
                 m_nowHistory = m_testHistory;
                 m_nowScrollbar = testScrollbar;
                 testObject.SetActive(true);
-                header.text = "Test";
+                header.text = "Preset Pitching";
                 break;
         }
 

@@ -70,7 +70,7 @@ public class MenuController : MonoBehaviour
             return;
         }
 
-        float angle = (((-1f * Mathf.Atan2(trackPadPos.y, trackPadPos.x) * Mathf.Rad2Deg + 360f - 90f))) % 360f;
+        float angle = (((-1f * Mathf.Atan2(trackPadPos.x, trackPadPos.y) * Mathf.Rad2Deg + 360f + 180f))) % 360f;
         float partAngle = 360f / menuData.Length;
         selected = Mathf.FloorToInt((angle/ partAngle));
     }
@@ -85,7 +85,7 @@ public class MenuController : MonoBehaviour
         int i = 0;
         foreach(MyButton mybtn in m_buttons)
         {
-            float rot = m_selectorImage.fillAmount * -360f;
+            float rot = m_selectorImage.fillAmount * 360f;
             mybtn.gameObject.transform.localPosition = Quaternion.AngleAxis(i++ * rot + rot / 2, Vector3.forward) * Vector3.down * radius;
         }
     }
@@ -96,7 +96,7 @@ public class MenuController : MonoBehaviour
         MyButton btn = new MyButton();
 
         FixedButtonText();
-        float rot = m_selectorImage.fillAmount * -360f;
+        float rot = m_selectorImage.fillAmount * 360f;
         btnObj.transform.SetParent(m_buttonsParent);
         btnObj.transform.localScale = Vector3.one;
         btnObj.transform.localRotation = Quaternion.Euler(Vector3.zero);
@@ -303,13 +303,13 @@ public class MenuController : MonoBehaviour
 
             if(selectedBuf < 0 && selected >= 0)
             {
-                m_from = Quaternion.AngleAxis(selected * m_selectorImage.fillAmount * -360f, Vector3.forward);
+                m_from = Quaternion.AngleAxis((selected + 1) * m_selectorImage.fillAmount * 360f, Vector3.forward);
             }
             else
             {
                 m_from = m_selectorImage.gameObject.transform.localRotation;
             }
-            m_to = Quaternion.AngleAxis(selected * m_selectorImage.fillAmount * -360f, Vector3.forward);
+            m_to = Quaternion.AngleAxis((selected + 1) * m_selectorImage.fillAmount * 360f, Vector3.forward);
 
             selectedBuf = selected;
         }

@@ -61,9 +61,10 @@ public class BallDirection
         float targetX = property.panelSize.x * (targetXi + 0.5f) + (property.centerPosition.x - property.zoneSize.x / 2f);
         float targetY = property.panelSize.y * (targetYi + 0.5f) + (property.centerPosition.y - property.zoneSize.y / 2f);
 
-        Quaternion rot = initRotation;
+		// Quaternion rot = initRotation;
+		Quaternion rot = Quaternion.Euler(0,0,1);
 
-        for (int trial = 0; trial < 5; trial++)
+		for (int trial = 0; trial < 5; trial++)
         {
             //実際に投球
             Vector3 p = initPosition;
@@ -206,6 +207,7 @@ public class BallSimulator : MonoBehaviour
         m_nextPos   = pos;
         m_nextVelo  = q * velo;
         m_nextForce = force;
+        // Debug.Log("line, column: (" + line + ", " + colunm + ")");
     }
 
     public void Fastball(float velocity = 0f, int line = -1, int colunm = -1)
@@ -244,7 +246,7 @@ public class BallSimulator : MonoBehaviour
             line = target[0];
             colunm = target[1];
             target = null;
-            Debug.Log("Curveball line, column: (" + line + ", " + colunm + ")");
+            // Debug.Log("Curveball line, column: (" + line + ", " + colunm + ")");
         }
 
         SetParameterForBreakingball(Param.initPosition, new Vector3(0, 0, velocity * -1000.0f / 3600.0f), Param.rotCurve, Param.forceCurve, line, colunm);
@@ -265,7 +267,7 @@ public class BallSimulator : MonoBehaviour
             line = target[0];
             colunm = target[1];
             target = null;
-            Debug.Log("Sliderball line, column: (" + line + ", " + colunm + ")");
+            // Debug.Log("Sliderball line, column: (" + line + ", " + colunm + ")");
         }
 
         SetParameterForBreakingball(Param.initPosition, new Vector3(0, 0, velocity * -1000.0f / 3600.0f), Param.rotSlider, Param.forceSlider, line, colunm);
@@ -286,7 +288,7 @@ public class BallSimulator : MonoBehaviour
             line = target[0];
             colunm = target[1];
             target = null;
-            Debug.Log("Screwball line, column: (" + line + ", " + colunm + ")");
+            // Debug.Log("Screwball line, column: (" + line + ", " + colunm + ")");
         }
 
         SetParameterForBreakingball(Param.initPosition, new Vector3(0, 0, velocity * -1000.0f / 3600.0f), Param.rotScrew, Param.forceScrew, line, colunm);
@@ -370,8 +372,8 @@ public class BallSimulator : MonoBehaviour
                 StrikeZoneProperty p = ballManager.strikeZoneProperty;
                 float LBx = p.centerPosition.x - p.zoneSize.x / 2f;
                 float LBy = p.centerPosition.y - p.zoneSize.y / 2f;
-                int xi = (int)((zp.x - LBx) / p.size.x * p.horiPanelNum);
-                int yi = (int)((zp.y - LBy) / p.size.y * p.vertPanelNum);
+                int xi = (int)((zp.x - LBx) / p.zoneSize.x * p.horiPanelNum);
+                int yi = (int)((zp.y - LBy) / p.zoneSize.y * p.vertPanelNum);
 
                 // Debug.Log("ゾーン到達点のposの座標 " + zp);
                 // Debug.Log("ゾーン到達点のposの座標 " + xi + " " + yi);

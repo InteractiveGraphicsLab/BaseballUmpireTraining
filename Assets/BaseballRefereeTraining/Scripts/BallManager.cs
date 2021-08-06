@@ -79,7 +79,7 @@ public class BallManager : MonoBehaviour
     private bool m_replay = false;
     private bool m_isPause = false;
 
-    private bool m_isJudge = true;
+    // private bool m_isJudge = true;
 
     public void SetStrikeZoneProperty(StrikeZoneProperty s)
     {
@@ -97,18 +97,25 @@ public class BallManager : MonoBehaviour
         ball.Pause(m_isPause);
         motion.Pause(m_isPause);
         ball.InitPosition();
-        strikeZone.HideBallTrace();
+        if(GameManager.instance.GetNowMode() == Mode.Replay)
+        {
+            strikeZone.ShowStrikeZone();
+        }
+        else
+        {
+            strikeZone.Hide();
+        }
     }
 
     public void Replay(bool isJudge = false)
     {
         m_replay = true;
 
-        m_isJudge = isJudge;
-        if(m_isJudge)
-        {
-            GameManager.instance.ResetPosition();
-        }
+        // m_isJudge = isJudge;
+        // if(m_isJudge)
+        // {
+        //     GameManager.instance.ResetPosition();
+        // }
     }
 
     public void StopReplay()
@@ -206,32 +213,16 @@ public class BallManager : MonoBehaviour
 
         if (m_judging && OVRInput.GetDown(strikeJudgeInput, controller))
         {
-            //Select Strike
-            if (head.localPosition.y - 0.15f < judgeController.localPosition.y)
+            bool userJudge = head.localPosition.y - 0.15f < judgeController.localPosition.y;
+            Judge(userJudge, m_judgementTime);
+            strikeZone.Show(m_thisZonePos);
+            StartCoroutine(GameManager.instance.Wait(resultTime, () =>
             {
-                Judge(true, m_judgementTime);
-                strikeZone.ShowBallTrace(m_thisZonePos);
-                StartCoroutine(GameManager.instance.Wait(resultTime, () =>
-                {
-                    GameManager.instance.SetMainBoard();
-                    GameManager.instance.SetSubBoard();
-                    strikeZone.HideBallTrace();
-                }));
-                m_judging = false;
-            }
-            //Select Ball
-            else
-            {
-                Judge(false, m_judgementTime);
-                strikeZone.ShowBallTrace(m_thisZonePos);
-                StartCoroutine(GameManager.instance.Wait(resultTime, () =>
-                {
-                    GameManager.instance.SetMainBoard();
-                    GameManager.instance.SetSubBoard();
-                    strikeZone.HideBallTrace();
-                }));
-                m_judging = false;
-            }
+                GameManager.instance.SetMainBoard();
+                GameManager.instance.SetSubBoard();
+                strikeZone.Hide();
+            }));
+            m_judging = false;
         }
     }
 
@@ -269,6 +260,7 @@ public class BallManager : MonoBehaviour
                 else
                 {
                     BallInfo info = m_order[m_orderIndex++];
+                    GameManager.instance.SetModeBoard("Preset Pitching:  " + m_orderIndex + " / " + m_order.Length);
                     m_thisBall = info.type;
                     SetBallParameter(m_thisBall, info.velocity, info.line, info.column);
                     StartPitching();
@@ -280,28 +272,14 @@ public class BallManager : MonoBehaviour
 
         if (m_judging && OVRInput.GetDown(strikeJudgeInput, controller))
         {
-            //Select Strike
-            if (head.localPosition.y - 0.15f < judgeController.localPosition.y)
+            bool userJudge = head.localPosition.y - 0.15f < judgeController.localPosition.y;
+            Judge(userJudge, m_judgementTime);
+            StartCoroutine(GameManager.instance.Wait(resultTime, () =>
             {
-                m_judging = false;
-                Judge(true, m_judgementTime);
-                StartCoroutine(GameManager.instance.Wait(resultTime, () =>
-                {
-                    GameManager.instance.SetMainBoard();
-                    GameManager.instance.SetSubBoard();
-                }));
-            }
-            //Select Ball
-            else
-            {
-                m_judging = false;
-                Judge(false, m_judgementTime);
-                StartCoroutine(GameManager.instance.Wait(resultTime, () =>
-                {
-                    GameManager.instance.SetMainBoard();
-                    GameManager.instance.SetSubBoard();
-                }));
-            }
+                GameManager.instance.SetMainBoard();
+                GameManager.instance.SetSubBoard();
+            }));
+            m_judging = false;
         }
     }
 
@@ -312,8 +290,8 @@ public class BallManager : MonoBehaviour
     {
         if(ball.IsPitching()) return;
 
-        if (!m_judging)
-        {
+        // if (!m_judging)
+        // {
             if (!motion.IsAnimating() && m_replay)
             {
                 BallInfo info = historyMenu.GetSelectedBallInfo();
@@ -321,45 +299,45 @@ public class BallManager : MonoBehaviour
                 {
                     m_thisBall = info.type;
                     SetBallParameter(m_thisBall, info.velocity, info.line, info.column);
-                    ball.Trail(m_isJudge ? 0 : trailTime);
+                    ball.Trail(trailTime);
                     StartPitching();
-                    m_judging = m_isJudge;
+                    // m_judging = m_isJudge;
                 }
             }
-        }
+        // }
 
-        if(m_isJudge)
-        {
-            if (m_judging && OVRInput.GetDown(strikeJudgeInput, controller))
-            {
-                //Select Strike
-                if (head.localPosition.y - 0.15f < judgeController.localPosition.y)
-                {
-                    Judge(true, m_judgementTime);
-                    StartCoroutine(GameManager.instance.Wait(resultTime, () =>
-                    {
-                        GameManager.instance.SetMainBoard();
-                        GameManager.instance.SetSubBoard();
-                    }));
-                    m_judging = false;
-                }
-                //Select Ball
-                else
-                {
-                    Judge(false, m_judgementTime);
-                    StartCoroutine(GameManager.instance.Wait(resultTime, () =>
-                    {
-                        GameManager.instance.SetMainBoard();
-                        GameManager.instance.SetSubBoard();
-                    }));
-                    m_judging = false;
-                }
-            }
-        }
-        else
-        {
-            strikeZone.ShowStrikeZone();
-        }
+        // if(m_isJudge)
+        // {
+        //     if (m_judging && OVRInput.GetDown(strikeJudgeInput, controller))
+        //     {
+        //         //Select Strike
+        //         if (head.localPosition.y - 0.15f < judgeController.localPosition.y)
+        //         {
+        //             Judge(true, m_judgementTime);
+        //             StartCoroutine(GameManager.instance.Wait(resultTime, () =>
+        //             {
+        //                 GameManager.instance.SetMainBoard();
+        //                 GameManager.instance.SetSubBoard();
+        //             }));
+        //             m_judging = false;
+        //         }
+        //         //Select Ball
+        //         else
+        //         {
+        //             Judge(false, m_judgementTime);
+        //             StartCoroutine(GameManager.instance.Wait(resultTime, () =>
+        //             {
+        //                 GameManager.instance.SetMainBoard();
+        //                 GameManager.instance.SetSubBoard();
+        //             }));
+        //             m_judging = false;
+        //         }
+        //     }
+        // }
+        // else
+        // {
+        //     strikeZone.ShowStrikeZone();
+        // }
     }
 
     private void Start()

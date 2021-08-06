@@ -50,6 +50,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject teleportation;
     [SerializeField] GameObject teleportPoint;
     [SerializeField] GameObject hitter;
+    [SerializeField] GameObject selector;
     [SerializeField] BallManager ballManager;
     [SerializeField] MenuManger menuManger;
     [SerializeField] HistoryMenu historyMenu;
@@ -167,8 +168,8 @@ public class GameManager : MonoBehaviour
     public void SetTeleportState(bool isActive)
     {
         teleportation.SetActive(isActive);
-        teleportPoint.SetActive(isActive);
-        hitter.SetActive(!isActive);
+        // hitter.SetActive(!isActive);
+        hitter.SetActive(true);
     }
 
     public void SetActiveTeleport()
@@ -209,6 +210,9 @@ public class GameManager : MonoBehaviour
         SetSubBoard();
         SetModeBoard();
         SetActiveTeleport();
+        //todo
+        ChangeModeToPractice();
+        selector.SetActive(true);
         menuManger.ActiveUI(State.Select);
         historyMenu.InactiveUIs();
     }
@@ -221,6 +225,7 @@ public class GameManager : MonoBehaviour
         SetInactiveTeleport();
         ResetPosition();
         ballManager.Init();
+        selector.SetActive(false);
         menuManger.ActiveUI(State.Judge);
         historyMenu.InactiveUIs();
     }
@@ -232,6 +237,7 @@ public class GameManager : MonoBehaviour
         SetModeBoard("Replay");
         SetActiveTeleport();
         ballManager.Init();
+        selector.SetActive(false);
         menuManger.ActiveUI(State.Replay);
         historyMenu.ChangeHistoryToPractice();
     }

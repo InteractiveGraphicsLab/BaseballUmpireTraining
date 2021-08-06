@@ -39,7 +39,6 @@ public class StrikeZoneManager : MonoBehaviour
     {
         m_ballTracer.gameObject.transform.localPosition = new Vector3(-pos.x, pos.y, m_posZ);
 
-        ShowStrikeZone();
         m_ballTracer.gameObject.SetActive(true);
     }
 
@@ -106,7 +105,7 @@ public class StrikeZoneManager : MonoBehaviour
         line.numCornerVertices = 10;
         line.loop = true;
         line.widthMultiplier = 0.2f;
-        line.sortingLayerName = "StrikeZone";
+        // line.sortingLayerName = "StrikeZone";
     }
 
     private void CreateLine(Vector3 start, Vector3 end)
@@ -182,6 +181,6 @@ public class StrikeZoneManager : MonoBehaviour
         CreateBatterZone();
         CreateBatterZoneLine();
         CreateBallTracer();
-        HideBallTrace();
+        Hide();
     }
 }
