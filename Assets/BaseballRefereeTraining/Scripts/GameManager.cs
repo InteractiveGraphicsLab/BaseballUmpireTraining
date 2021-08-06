@@ -191,6 +191,20 @@ public class GameManager : MonoBehaviour
         }
     }
 
+	public string GetModeString(Mode m)
+	{
+		switch(m) {
+			case Mode.Practice:
+				return "Ramdom Pitching";
+			case Mode.Test:
+				return "Preset Pitching";
+			case Mode.Replay:
+				return "Review";
+			default:
+				return "";
+		}
+	}
+
     public IEnumerator Vibrate(OVRInput.Controller controller = OVRInput.Controller.Active, float duration = 0.1f, float frequency = 0.3f, float amplitude = 0.3f)
     {
         OVRInput.SetControllerVibration(frequency, amplitude, controller);
@@ -221,7 +235,7 @@ public class GameManager : MonoBehaviour
     {
         SetMainBoard();
         SetSubBoard();
-        SetModeBoard(m_nowMode.ToString());
+        SetModeBoard(GetModeString(m_nowMode));
         SetInactiveTeleport();
         ResetPosition();
         ballManager.Init();
@@ -234,7 +248,7 @@ public class GameManager : MonoBehaviour
     {
         SetMainBoard();
         SetSubBoard();
-        SetModeBoard("Replay");
+        SetModeBoard(GetModeString(m_nowMode));
         SetActiveTeleport();
         ballManager.Init();
         selector.SetActive(false);

@@ -121,7 +121,7 @@ public class BallManager : MonoBehaviour
     public void StopReplay()
     {
         Init();
-        GameManager.instance.SetModeBoard("Replay");
+        GameManager.instance.SetModeBoard("Review");
     }
 
     public BallType RandomBalls()

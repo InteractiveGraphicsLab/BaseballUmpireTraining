@@ -290,6 +290,7 @@ public class MenuController : MonoBehaviour
                     m_buttons[i].gameObject.transform.localPosition += cooperationRatio * 5f * Vector3.back;
                     m_buttons[i].text.fontSize = (int)(defualtFontSize * cooperationRatio);
                     m_buttons[i].text.color = highlightColor;
+					m_buttons[i].gameObject.transform.SetAsLastSibling();
                 }
                 else
                 {
