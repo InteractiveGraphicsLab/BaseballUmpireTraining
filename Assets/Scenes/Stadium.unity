@@ -5180,7 +5180,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Referee Training
+  m_Text: Umpire Training
 --- !u!222 &1480672273
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5671,7 +5671,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Referee Training
+  m_Text: Umpire Training
 --- !u!222 &1737809708
 CanvasRenderer:
   m_ObjectHideFlags: 0

@@ -57,8 +57,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] Text mainBoard;
     [SerializeField] Text subBoard;
     [SerializeField] Text modeBoard;
-    private Vector3 m_refereePos;
-    private Quaternion m_refereeRot;
+    private Vector3 m_umpirePos;
+    private Quaternion m_umpireRot;
     private State m_nowState = State.Select;
     private Mode m_nowMode = Mode.Practice;
 
@@ -184,10 +184,10 @@ public class GameManager : MonoBehaviour
 
     public void ResetPosition()
     {
-        if(avater.position != m_refereePos)
+        if(avater.position != m_umpirePos)
         {
-            avater.position = m_refereePos;
-            avater.rotation = m_refereeRot;
+            avater.position = m_umpirePos;
+            avater.rotation = m_umpireRot;
         }
     }
 
@@ -220,7 +220,7 @@ public class GameManager : MonoBehaviour
 
     private void InitForSelect()
     {
-        SetMainBoard("Referee Training");
+        SetMainBoard("Umpire Training");
         SetSubBoard();
         SetModeBoard();
         SetActiveTeleport();
@@ -258,8 +258,8 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        m_refereePos = avater.position;
-        m_refereeRot = avater.rotation;
+        m_umpirePos = avater.position;
+        m_umpireRot = avater.rotation;
         ChangeStateToSelect();
     }
 
@@ -273,7 +273,7 @@ public class GameManager : MonoBehaviour
 
         if(m_nowState == State.Select)
         {
-            SetMainBoard("Referee Training");
+            SetMainBoard("Umpire Training");
             SetModeBoard();
         }
         // else if(m_nowState == State.Judge)

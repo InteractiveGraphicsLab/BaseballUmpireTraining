@@ -67,7 +67,7 @@ public class BallInfoCSV : IDisposable
         }
     }
 
-    public void NewFile(string fileName = "BaseballRefereeTraining_Result")
+    public void NewFile(string fileName = "BaseballUmpireTraining_Result")
     {
         // m_streamWriter = new StreamWriter(GetPath(AddDate(fileName)), true, Encoding.UTF8) { AutoFlush = true };
         // m_streamWriter.WriteLine("BallType,Velocity,Line,Column,IsCorrect,JudgementTime");
