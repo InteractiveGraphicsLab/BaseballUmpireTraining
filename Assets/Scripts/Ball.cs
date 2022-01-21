@@ -21,15 +21,15 @@ public class Ball {
     static float ballArea { get { return Mathf.PI * ballRadius * ballRadius; } }    // 断面積
 
     static float fpm = 3.281f;      // feet/meter;
-    static float mpm = 1.60934f;    // mile/meter;
+    static float kmpm = 1.60934f;    // kilometer/mile;
 
-    static int trialNum = 10;
+    static int trialNum = 100;
 
     // z => y, x => z, y => -x
     public static Vector3 CalcAcceleration(Ball b) {
-        float vz2 = Mathf.Pow(b.vel.z, 2f);
-        float vx2 = Mathf.Pow(b.vel.x, 2f);
-        float vy2 = Mathf.Pow(b.vel.y, 2f);
+        float vz2 = b.vel.z * Mathf.Abs(b.vel.z);
+        float vx2 = b.vel.x * Mathf.Abs(b.vel.x);
+        float vy2 = b.vel.y * Mathf.Abs(b.vel.y);
 
         float za = -1f * b.CD * vz2;
         float zb = -1f * b.CL * Mathf.Cos(b.spinAxis[0]) * vx2;
@@ -48,35 +48,49 @@ public class Ball {
         return w * new Vector3(-(xa + xb + xc), ya + yb + yc + gravity, za + zb + zc);
     }
 
-    public static Ball Compose(float velocity, Vector3 releasePosition, Vector2 spinAxis, int spinRate, Vector2 expectedPosOnBase) {
-        return new Ball(velocity, releasePosition, spinAxis, spinRate, expectedPosOnBase);
+    public static Ball Compose(string name, string type, bool isRightThrow, float velocity, Vector3 releasePosition, Vector2 spinAxis, float spinRate, Vector2 expectedPosOnBase) {
+        return new Ball(name, type, isRightThrow, velocity, releasePosition, spinAxis, spinRate, expectedPosOnBase);
     }
 
     public static Ball Compose(
-        float velocityMile,
-        float rePosx, float rePosy, float rePosz,
+        string pitcherName, string ballType, string domHand,
+        float velocityMile, //km/h
+        float rePosx, float rePosy, float rePosz, // m, m, m
         float spinAxisxy, float activeSpin,
-        int spinRate,
-        float xOnPlate, float yOnPlate
+        int spinRate, // rpm
+        float xOnPlate, float yOnPlate //m, m
         ) {
-        float v = velocityMile * mpm * 1000f / 3600f;
+        bool isRight = domHand == "R";
+        float v = velocityMile * kmpm * 1000f / 3600f;
         Vector3 rp = new Vector3(rePosx, rePosy, rePosz) / fpm;
-        float theta = Mathf.Abs(spinAxisxy - 180f) * Mathf.Deg2Rad;
-        float phi = Mathf.Abs(90f - Mathf.Acos(activeSpin / 100f)) * Mathf.Deg2Rad;
-        Vector2 sa = new Vector2(theta, phi);
+
+        float alpha = (90f - spinAxisxy + 360f) % 360f;
+        float phi = 90f - Mathf.Acos(activeSpin / 100f) * Mathf.Rad2Deg;
+        float theta = Mathf.Atan(Mathf.Tan(alpha * Mathf.Deg2Rad) / Mathf.Sin(phi * Mathf.Deg2Rad)) * Mathf.Rad2Deg;
+        if (alpha > 90f)
+            theta += 180f;
+        if (!isRight) // ???
+            phi = -phi;
+        Vector2 sa = new Vector2(theta, phi) * Mathf.Deg2Rad;
+
+        float rate = (float)spinRate / 60f;
         Vector2 pop = new Vector2(xOnPlate, yOnPlate) / fpm;
 
-        return Compose(v, rp, sa, spinRate, pop);
+        Debug.Log($"name:{ballType}\nspinAxis:{spinAxisxy}, activeSpin:{activeSpin}\ntheta:{sa.x * Mathf.Rad2Deg}, phi:{sa.y * Mathf.Rad2Deg}");
+
+        return Compose(pitcherName, ballType, isRight, v, rp, sa, rate, pop);
     }
 
-    public string name { get; private set; }		// 球種
+    public string pitcherName { get; private set; }	// 投手名
+    public string balltype { get; private set; }	// 球種
+    public bool isRightThrow { get; private set; }  // 右投げor左投げ
     public float initVelo { get; private set; }		// 初速度（m/s）
     public Vector3 initPos { get; private set; }	// リリースポジション，初期位置（m）
     public Quaternion initRot { get; private set; }	// 初速度方向
     public Vector2 spinAxis { get; private set; }	// 回転軸 [zx平面上の角度, zx平面とy軸との角度]
-    public int spinRate { get; private set; }       // 回転数（rps）
+    public float spinRate { get; private set; }     // 回転数（rps）
     public Vector2 expectedPosOnBase { get; private set; }	// 予想されるホームベース上のボールの通過位置
-    public float spinParam { get { return Mathf.PI * ballRadius * spinRate / vel.magnitude; } } 		// スピンパラメータ
+    public float spinParam { get { return Mathf.PI * ballDiameter * spinRate / vel.magnitude; } } 		// スピンパラメータ
     public float CD { get { return 0.188f * spinParam * spinParam + 1.1258f * spinParam + 0.3679f; } } 	// 抗力定数
     public float CL { get { return -0.4288f * spinParam * spinParam + 1.0002f * spinParam; } }          // 揚力定数
 
@@ -85,6 +99,7 @@ public class Ball {
     public Vector3 vel { get; private set; }
 
     public void Simulate(float dt) {
+        // Debug.Log($"Acc:{CalcAcceleration(this).ToString("f9")}\nCD:{CD.ToString("f9")}, CL{CL.ToString("f9")}, SP:{spinParam.ToString("f9")}\nr:{ballRadius.ToString("f9")}, rate:{spinRate.ToString("f9")}, v:{vel.magnitude.ToString("f9")}");
         vel += CalcAcceleration(this) * dt;
         pos += vel * dt;
     }
@@ -93,7 +108,7 @@ public class Ball {
         Vector3 posOnBase = initPos;
         float basePosZ = StrikeZone.inst.center.z;
 
-        initRot = Quaternion.Euler(0, 0, 1);
+        initRot = Quaternion.Euler(0, 0, 0);
 
         // Debug.Log($"[Ans] ({expectedPosOnBase.x}, {expectedPosOnBase.y})");
         for (int trial = 0; trial < trialNum; trial++) {
@@ -106,26 +121,39 @@ public class Ball {
                 if (posOnBase.z <= basePosZ && basePosZ <= pos.z) {
                     float t = (basePosZ - pos.z) / (posOnBase.z - pos.z);
                     posOnBase = pos + t * (posOnBase - pos);
+                    // Debug.Log($"exit!, pob:{posOnBase.x.ToString("f9")}");
                     break;
                 }
+                // Debug.Log($"pos:{pos.ToString("f9")}");
             }
 
             float dx = expectedPosOnBase.x - posOnBase.x;
             float dy = expectedPosOnBase.y - posOnBase.y;
             // float L = 18.44f - property.centerPosition.z;
             float L = basePosZ - initPos.z;
-            float angleX = Mathf.Atan(dx / L) / Mathf.PI * 180;
-            float angleY = Mathf.Atan(dy / L) / Mathf.PI * 180;
+            float angleX = Mathf.Atan(dx / L) * Mathf.Rad2Deg;
+            float angleY = Mathf.Atan(dy / L) * Mathf.Rad2Deg;
+            if (angleX == 0 && angleY == 0) continue;
             initRot = Quaternion.Euler(-angleY, angleX, 0) * initRot;
             // Debug.Log($"[{trial}th] ({posOnBase.x}, {posOnBase.y}, {posOnBase.z}), Angle({initRot.eulerAngles.x}, {initRot.eulerAngles.y}, {initRot.eulerAngles.z})");
         }
 
         pos = initPos;
         vel = initRot * new Vector3(0, 0, initVelo);
+        // Debug.Log("initRot" + initRot.eulerAngles);
+        // Debug.Log($"expectedPosOnBase:{expectedPosOnBase.ToString("f9")}\nposOnBase:{posOnBase.ToString("f9")}");
     }
 
-    Ball(float velocity, Vector3 releasePosition, Vector2 spinAxis, int spinRate, Vector2 posop) {
-        (initVelo, initPos, spinAxis, spinRate, expectedPosOnBase) = (velocity, releasePosition, spinAxis, spinRate, posop);
-        Debug.Log(spinAxis);
+    Ball(string name, string type, bool isRight, float velocity, Vector3 releasePosition, Vector2 saxis, float rate, Vector2 posop) {
+        (pitcherName, balltype, isRightThrow, initVelo, initPos, spinAxis, spinRate, expectedPosOnBase) = (name, type, isRight, velocity, releasePosition, saxis, rate, posop);
+        Init();
+        // Debug.Log("initVelo: " + (initVelo * 3600f / 1000f) + "km/h");
+        // Debug.Log("initPos: " + initPos);
+        // Debug.Log("SpinAxis: " + (spinAxis * Mathf.Rad2Deg));
+        // Debug.Log("spinRate: " + spinRate);
+        // Debug.Log("expectedPosOnBase: " + expectedPosOnBase);
     }
+
+    public Ball(Ball b) :
+    this(b.pitcherName, b.balltype, b.isRightThrow, b.initVelo, b.initPos, b.spinAxis, b.spinRate, b.expectedPosOnBase) { }
 }
