@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using Cysharp.Threading.Tasks; //UniTask
+using Cysharp.Threading.Tasks;
 
 //datas: https://baseballsavant.mlb.com/statcast_search
 public class MyBallSimulator : MonoBehaviour {

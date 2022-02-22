@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine.EventSystems;
+﻿using UnityEngine.EventSystems;
 
 public class PitcherListItemContainer : UIBehaviour, IScrollItem<Pitcher> {
     PitcherListItem[] plil;
