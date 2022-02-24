@@ -17,12 +17,10 @@ public class BallRotationPreview : MonoBehaviour {
         ball.transform.localRotation = Quaternion.identity;
         this.transform.localRotation = Quaternion.identity;
 
-        // Debug.Log($"axis: {angleAxis * Mathf.Rad2Deg}, spin: {spin}");
-
-        axis = new Vector3(
-            -Mathf.Sin(angleAxis[1]) * Mathf.Sin(-angleAxis[0]),
-            -Mathf.Cos(angleAxis[1]),
-            -Mathf.Sin(angleAxis[1]) * Mathf.Cos(-angleAxis[0])
+        axis = -new Vector3(
+            -Mathf.Sin(angleAxis[0]) * Mathf.Sin(angleAxis[1]),
+            Mathf.Cos(angleAxis[0]),
+            Mathf.Sin(angleAxis[0]) * Mathf.Cos(angleAxis[1])
         );
 
         axisObj.transform.LookAt(axis + axisObj.transform.position);

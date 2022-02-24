@@ -9,7 +9,6 @@ public class BallData {
     static string dest = "https://baseballsavant.mlb.com/statcast_search/csv?hfPT=&hfAB=&hfGT=R%7C&hfPR=&hfZ=&stadium=&hfBBL=&hfNewZones=&hfPull=&hfC=&hfSea=2021%7C&hfSit=&player_type=pitcher&hfOuts=&opponent=&pitcher_throws=&batter_stands=&hfSA=&game_date_gt=&game_date_lt=&hfInfield=&team=&position=&hfOutfield=&hfRO=&home_road=&hfFlag=&hfBBT=&metric_1=&hfInn=&min_pitches=0&min_results=0&group_by=name&sort_col=pitches&player_event_sort=api_p_release_speed&sort_order=desc&min_pas=0&type=details&";
 
     public enum Type {
-        Fastball,
         Fourseam,
         Sinker,
         Cutter,
@@ -63,7 +62,7 @@ public class BallData {
     }
 
     public static bool TryGetTypeOnActiveSpinData(string s, out Type t) {
-        t = Type.Fastball;
+        t = Type.Fourseam;
         int p = s.IndexOf(activeSpinPrefix);
         return p > -1 && TryGetType(s.Substring(p + activeSpinPrefix.Length), out t);
     }
@@ -103,22 +102,19 @@ public class BallData {
         return meanActiveSpins.Find(a => a.ballType == type);
     }
 
-    public static float GetActiveSpin(Type type, string lastName, string firstName) {
+    public static float GetActiveSpin(Type type, string lastName = "", string firstName = "") {
         string last, first;
+
+        if (lastName == "" && firstName == "")
+            return GetActiveSpinInfo(type).mean;
 
         for (int i = 0; i < activeSpinsData.Count; i++) {
             last = activeSpinsData[i][0].Trim();
             first = activeSpinsData[i][1].Trim();
             if (last == lastName && first == firstName && Single.TryParse(activeSpinsData[i][GetActiveSpinInfo(type).index], out float res))
                 return res;
-            // Debug.Log($"last:{last},{lastName}, {last == lastName}");
-            // Debug.Log($"first:{first},{firstName}, {first == firstName}");
-            // if (last == lastName && first == firstName) {
-            //     if (Single.TryParse(activeSpinsData[i][GetActiveSpinInfo(type).index], out float res)) {
-            //         return res;
-            //     }
-            // }
         }
+
         return GetActiveSpinInfo(type).mean;
     }
 
@@ -169,7 +165,7 @@ public class BallData {
         types.Add("FS", Type.Splitter);
         types.Add("SL", Type.Slider);
         types.Add("CU", Type.Curve);
-        types.Add("FA", Type.Fastball);
+        types.Add("KC", Type.Curve);
     }
 
     static string PitchingDataPath(string filename) {

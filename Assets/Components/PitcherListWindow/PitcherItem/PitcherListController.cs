@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class PitcherListController : FilterableListController<Pitcher> {
     [SerializeField] InputField uiNameField;
-    string uiName = "Shohei";
+    string uiName = "Walker";
     [SerializeField] InputField uiIdField;
     int uiId = 300000;
 

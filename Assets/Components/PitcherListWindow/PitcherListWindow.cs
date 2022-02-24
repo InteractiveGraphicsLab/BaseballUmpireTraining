@@ -11,6 +11,7 @@ public class PitcherListWindow : ListWindow {
         var blwindow = ListWindow.GetWindow("BallSearchWindow");
         PitcherListItem.AddSelectedListener((Pitcher p) => blwindow.UpdateList(p));
 
+        Debug.Log("window: " + Time.time);
         UniTask.Void(async () => {
             pitcherListCon.UpdateList(await PitcherData.LoadPithcerData(loadingSlider.GetProgressHandler()));
         });

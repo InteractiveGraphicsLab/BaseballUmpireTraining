@@ -13,9 +13,12 @@ public class MyCSV {
         string s;
         int a = 0, b, c;
 
-        await UniTask.SwitchToTaskPool();
+        Debug.Log("csv: " + (Time.time));
+
+        // await UniTask.SwitchToTaskPool();
 
         StringReader reader = new StringReader(csvText);
+        Debug.Log("csv: " + (Time.time));
         while (reader.Peek() != -1) {
             s = await reader.ReadLineAsync();
             while ((a = s.IndexOf('"', a)) > -1) {
@@ -30,7 +33,8 @@ public class MyCSV {
             datas.Add(new List<string>(s.Replace("\"", "").Split(',')));
             a = 0;
         }
-        await UniTask.SwitchToMainThread();
+        Debug.Log("csv: " + (Time.time));
+        // await UniTask.SwitchToMainThread();
 
         return datas;
     }

@@ -8,49 +8,67 @@
 // z軸: ホームベース方向
 // 原点: キャッチャー
 public class Ball {
-    public static float mass { get; } = 0.145f;
-    public static float diameter { get; } = 0.073f;
-    public static float radius { get { return diameter / 2; } }
-    public static float area { get { return Mathf.PI * radius * radius; } }    // 断面積
+    public static float mass { get; } = 0.145f; //kg
+    public static float diameter { get; } = 0.073f; //m
+    public static float radius { get { return diameter / 2; } } //m
+    public static float area { get { return Mathf.PI * radius * radius; } }
 
     static float fpm = 3.281f;      // feet/meter;
     static float kmpm = 1.60934f;    // kilometer/mile;
 
     static int trialNum = 10;
 
-    public static Ball Compose(string name, BallData.Type type, bool isRightThrow, float velocity, Vector3 releasePosition, Vector2 spinAxis, float spinRate, Vector2 expectedPosOnBase) {
-        return new Ball(name, type, isRightThrow, velocity, releasePosition, spinAxis, spinRate, expectedPosOnBase);
+    // public static Ball Compose(string name, BallData.Type type, bool isRightThrow, float velocity, Vector3 releasePosition, Vector2 spinAxis, float spinRate, Vector2 expectedPosOnBase) {
+    //     return new Ball(name, type, isRightThrow, velocity, releasePosition, spinAxis, spinRate, expectedPosOnBase);
+    // }
+
+    public static Ball Compose(
+        string pitcherName, BallData.Type ballType, bool isRightThrow,
+        float velocity, //km/h
+        Vector3 releasePosition, // m
+        float spinAxisxy, float activeSpin,
+        int spinRate, // rpm
+        Vector2 posOnPlate // m
+    ) {
+        string name = pitcherName.Trim('"');
+        float v = velocity * 1000f / 3600f;
+
+        // float alpha = (90f - spinAxisxy + 360f) % 360f;
+        float alpha = Mathf.Abs(spinAxisxy - 90f);
+        if (alpha > 180f) alpha = 360f - alpha;
+        float phi = 90f - Mathf.Acos(activeSpin / 100f) * Mathf.Rad2Deg;
+        float theta;
+        if (alpha > 90f)
+            theta = Mathf.Atan(Mathf.Tan((alpha - 90f) * Mathf.Deg2Rad) / Mathf.Sin(phi * Mathf.Deg2Rad)) * Mathf.Rad2Deg + 90f;
+        else
+            theta = Mathf.Atan(Mathf.Tan(alpha * Mathf.Deg2Rad) / Mathf.Sin(phi * Mathf.Deg2Rad)) * Mathf.Rad2Deg;
+        if (90f < spinAxisxy && spinAxisxy < 270f) phi = -phi;
+        Vector2 sa = new Vector2(theta, phi) * Mathf.Deg2Rad;
+
+        float rate = spinRate / 60f;
+
+        // Debug.Log($"name:{ballType}\nspinAxis:{spinAxisxy}, activeSpin:{activeSpin}\ntheta:{sa.x * Mathf.Rad2Deg}, phi:{sa.y * Mathf.Rad2Deg}");
+
+        return new Ball(name, ballType, isRightThrow, v, releasePosition, sa, rate, posOnPlate);
     }
 
     public static Ball Compose(
         string pitcherName, BallData.Type ballType, string domHand,
         float velocityMile, //mile
-        float rePosx, float rePosy, float rePosz, // m, m, m
+        float rePosx, float rePosy, float rePosz, //feet
         float spinAxisxy, float activeSpin,
         int spinRate, // rpm
-        float xOnPlate, float yOnPlate //m, m
-        ) {
+        float xOnPlate, float yOnPlate //feet
+    ) {
         string name = pitcherName.Trim('"');
-
         bool isRight = domHand == "R";
-        float v = velocityMile * kmpm * 1000f / 3600f;
+        float v = velocityMile * kmpm;
         Vector3 rp = new Vector3(rePosx, rePosy, rePosz) / fpm;
-
-        // float alpha = (90f - spinAxisxy + 360f) % 360f;
-        float alpha = Mathf.Abs(spinAxisxy - 90f);
-        if (alpha > 180) alpha = 360f - alpha;
-        float phi = 90f - Mathf.Acos(activeSpin / 100f) * Mathf.Rad2Deg;
-        float theta = Mathf.Atan(Mathf.Tan(alpha * Mathf.Deg2Rad) / Mathf.Sin(phi * Mathf.Deg2Rad)) * Mathf.Rad2Deg;
-        if (!isRight) // ???
-            phi = -phi;
-        Vector2 sa = new Vector2(theta, phi) * Mathf.Deg2Rad;
-
-        float rate = (float)spinRate / 60f;
         Vector2 pop = new Vector2(xOnPlate, yOnPlate) / fpm;
 
         // Debug.Log($"name:{ballType}\nspinAxis:{spinAxisxy}, activeSpin:{activeSpin}\ntheta:{sa.x * Mathf.Rad2Deg}, phi:{sa.y * Mathf.Rad2Deg}");
 
-        return Compose(name, ballType, isRight, v, rp, sa, rate, pop);
+        return Compose(name, ballType, isRight, v, rp, spinAxisxy, activeSpin, spinRate, pop);
     }
 
     public static Quaternion CalcRotation(Ball b) {

@@ -17,7 +17,7 @@ public class PitcherData {
 
         var csvText = request.downloadHandler.text;
 
-        await UniTask.SwitchToThreadPool();
+        // await UniTask.SwitchToThreadPool();
         var list = await MyCSV.Load(csvText);
 
         var indices = new Dictionary<string, int>();
@@ -39,8 +39,9 @@ public class PitcherData {
                     ret.Add(new Pitcher(System.Int32.Parse(list[i][indices["key_mlbam"]]), list[i][indices["name_first"]], list[i][indices["name_last"]]));
             }
         });
+        UnityEngine.Debug.Log(UnityEngine.Time.time);
 
-        await UniTask.SwitchToMainThread();
+        // await UniTask.SwitchToMainThread();
 
         return ret;
     }
