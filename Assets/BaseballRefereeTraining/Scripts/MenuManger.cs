@@ -2,27 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MenuManger : MonoBehaviour
-{
+public class MenuManger : MonoBehaviour {
     [SerializeField] OVRInput.Button subExecute;
     [SerializeField] OVRInput.Controller controller;
     [SerializeField] MenuController[] m_menuCons;
 
     private State m_nowState;
 
-    private void InactiveUIs()
-    {
-        foreach(MenuController mc in m_menuCons)
-        {
-            mc.SetActive(false);
+    private void InactiveUIs() {
+        foreach (MenuController mc in m_menuCons) {
+            mc?.SetActive(false);
         }
     }
 
-    public void ActiveUI(State state)
-    {
+    public void ActiveUI(State state) {
         InactiveUIs();
-        switch(state)
-        {
+        switch (state) {
             case State.Select:
                 m_menuCons[0].SetActive(true);
                 break;
@@ -38,13 +33,23 @@ public class MenuManger : MonoBehaviour
         m_nowState = state;
     }
 
-    void Start()
-    {
-        
+    public void ActiveUI(MyMode mode) {
+        InactiveUIs();
+        switch (mode) {
+            case MyMode.Search:
+            case MyMode.Random:
+                m_menuCons[0].SetActive(true);
+                break;
+            default:
+                break;
+        }
     }
 
-    void Update()
-    {
+    void Start() {
+
+    }
+
+    void Update() {
         //todo
         // if(m_nowState == State.Replay)
         // {

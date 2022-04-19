@@ -3,28 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum Mode
-{
+public enum Mode {
     Practice, Test, Replay
 }
 
-public enum State
-{
+public enum State {
     Select, Judge, Replay
 }
 
-public class GameManager : MonoBehaviour
-{
+public class GameManager : MonoBehaviour {
     private static GameManager _instance;
-    public static GameManager instance
-    {
-        get
-        {
-            if(_instance == null)
-            {
+    public static GameManager instance {
+        get {
+            if (_instance == null) {
                 _instance = GameObject.FindObjectOfType<GameManager>();
-                if (_instance == null)
-                {
+                if (_instance == null) {
                     GameObject obj = new GameObject(typeof(GameManager).Name);
                     _instance = obj.AddComponent<GameManager>();
                 }
@@ -33,15 +26,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void Awake()
-    {
-        if(_instance == null)
-        {
+    private void Awake() {
+        if (_instance == null) {
             _instance = this as GameManager;
             DontDestroyOnLoad(this.gameObject);
-        }
-        else
-        {
+        } else {
             Destroy(this.gameObject);
         }
     }
@@ -62,13 +51,11 @@ public class GameManager : MonoBehaviour
     private State m_nowState = State.Select;
     private Mode m_nowMode = Mode.Practice;
 
-    public State GetNowState()
-    {
+    public State GetNowState() {
         return m_nowState;
     }
 
-    public Mode GetNowMode()
-    {
+    public Mode GetNowMode() {
         return m_nowMode;
     }
 
@@ -82,144 +69,115 @@ public class GameManager : MonoBehaviour
     //     return subBoard;
     // }
 
-    public void SetMainBoard(string text = "", Color? color = null)
-    {
+    public void SetMainBoard(string text = "", Color? color = null) {
         mainBoard.text = text;
-        mainBoard.color =  color ?? Color.white;
+        mainBoard.color = color ?? Color.white;
     }
 
-    public void SetSubBoard(string text = "", Color? color = null)
-    {
+    public void SetSubBoard(string text = "", Color? color = null) {
         subBoard.text = text;
         subBoard.color = color ?? Color.white;
     }
 
-    public void SetModeBoard(string text = "", Color? color = null)
-    {
+    public void SetModeBoard(string text = "", Color? color = null) {
         modeBoard.text = text;
         modeBoard.color = color ?? Color.white;
     }
 
-    public void Play()
-    {
-        if(m_nowMode == Mode.Replay)
-        {
+    public void Play() {
+        if (m_nowMode == Mode.Replay) {
             ChangeStateToReplay();
-        }
-        else
-        {
+        } else {
             ChangeStateToJudge();
         }
     }
 
-    public void ChangeState(State state)
-    {
-        if(state == State.Select)
-        {
+    public void ChangeState(State state) {
+        if (state == State.Select) {
             InitForSelect();
-        }
-        else if(state == State.Judge)
-        {
+        } else if (state == State.Judge) {
             InitForJudge();
-        }
-        else if(state == State.Replay)
-        {
+        } else if (state == State.Replay) {
             InitForReplay();
         }
 
         m_nowState = state;
     }
 
-    public void ChangeStateToJudge()
-    {
+    public void ChangeStateToJudge() {
         ChangeState(State.Judge);
     }
 
-    public void ChangeStateToSelect()
-    {
+    public void ChangeStateToSelect() {
         ChangeState(State.Select);
     }
 
-    public void ChangeStateToReplay()
-    {
+    public void ChangeStateToReplay() {
         ChangeState(State.Replay);
     }
 
-    public void ChangeMode(Mode mode)
-    {
+    public void ChangeMode(Mode mode) {
         m_nowMode = mode;
     }
 
-    public void ChangeModeToPractice()
-    {
+    public void ChangeModeToPractice() {
         ChangeMode(Mode.Practice);
     }
 
-    public void ChangeModeToTest()
-    {
+    public void ChangeModeToTest() {
         ChangeMode(Mode.Test);
     }
 
-    public void ChangeModeToReplay()
-    {
+    public void ChangeModeToReplay() {
         ChangeMode(Mode.Replay);
     }
 
-    public void SetTeleportState(bool isActive)
-    {
+    public void SetTeleportState(bool isActive) {
         teleportation.SetActive(isActive);
         // hitter.SetActive(!isActive);
         hitter.SetActive(true);
     }
 
-    public void SetActiveTeleport()
-    {
+    public void SetActiveTeleport() {
         SetTeleportState(true);
     }
 
-    public void SetInactiveTeleport()
-    {
+    public void SetInactiveTeleport() {
         SetTeleportState(false);
     }
 
-    public void ResetPosition()
-    {
-        if(avater.position != m_umpirePos)
-        {
+    public void ResetPosition() {
+        if (avater.position != m_umpirePos) {
             avater.position = m_umpirePos;
             avater.rotation = m_umpireRot;
         }
     }
 
-	public string GetModeString(Mode m)
-	{
-		switch(m) {
-			case Mode.Practice:
-				return "Ramdom Pitching";
-			case Mode.Test:
-				return "Preset Pitching";
-			case Mode.Replay:
-				return "Review";
-			default:
-				return "";
-		}
-	}
+    public string GetModeString(Mode m) {
+        switch (m) {
+            case Mode.Practice:
+                return "Ramdom Pitching";
+            case Mode.Test:
+                return "Preset Pitching";
+            case Mode.Replay:
+                return "Review";
+            default:
+                return "";
+        }
+    }
 
-    public IEnumerator Vibrate(OVRInput.Controller controller = OVRInput.Controller.Active, float duration = 0.1f, float frequency = 0.3f, float amplitude = 0.3f)
-    {
+    public IEnumerator Vibrate(OVRInput.Controller controller = OVRInput.Controller.Active, float duration = 0.1f, float frequency = 0.3f, float amplitude = 0.3f) {
         OVRInput.SetControllerVibration(frequency, amplitude, controller);
         yield return new WaitForSeconds(duration);
         OVRInput.SetControllerVibration(0, 0, controller);
     }
 
-    public IEnumerator Wait(float time, System.Action action)
-    {
+    public IEnumerator Wait(float time, System.Action action) {
         yield return new WaitForSeconds(time);
         action();
     }
 
-    private void InitForSelect()
-    {
+    private void InitForSelect() {
         SetMainBoard("Umpire Training");
         SetSubBoard();
         SetModeBoard();
@@ -231,8 +189,7 @@ public class GameManager : MonoBehaviour
         historyMenu.InactiveUIs();
     }
 
-    private void InitForJudge()
-    {
+    private void InitForJudge() {
         SetMainBoard();
         SetSubBoard();
         SetModeBoard(GetModeString(m_nowMode));
@@ -244,8 +201,7 @@ public class GameManager : MonoBehaviour
         historyMenu.InactiveUIs();
     }
 
-    private void InitForReplay()
-    {
+    private void InitForReplay() {
         SetMainBoard();
         SetSubBoard();
         SetModeBoard(GetModeString(m_nowMode));
@@ -256,33 +212,30 @@ public class GameManager : MonoBehaviour
         historyMenu.ChangeHistoryToPractice();
     }
 
-    private void Start()
-    {
-        m_umpirePos = avater.position;
-        m_umpireRot = avater.rotation;
-        ChangeStateToSelect();
-    }
+    // private void Start() {
+    //     m_umpirePos = avater.position;
+    //     m_umpireRot = avater.rotation;
+    //     ChangeStateToSelect();
+    // }
 
-    private void Update()
-    {
-        //todo
-        Vector3 pos = avater.transform.localPosition;
-        float y = pos.y - 0.3f;
-        if(y < 0) y = 0;
-        avater.transform.localPosition = new Vector3(avater.transform.localPosition.x, y, avater.transform.localPosition.z);
+    // private void Update() {
+    //     //todo
+    //     Vector3 pos = avater.transform.localPosition;
+    //     float y = pos.y - 0.3f;
+    //     if (y < 0) y = 0;
+    //     avater.transform.localPosition = new Vector3(avater.transform.localPosition.x, y, avater.transform.localPosition.z);
 
-        if(m_nowState == State.Select)
-        {
-            SetMainBoard("Umpire Training");
-            SetModeBoard();
-        }
-        // else if(m_nowState == State.Judge)
-        // {
-        //     SetModeBoard("Replay");
-        // }
-    //     else if(m_nowState == State.Replay)
-    //     {
-
+    //     if (m_nowState == State.Select) {
+    //         SetMainBoard("Umpire Training");
+    //         SetModeBoard();
     //     }
-    }
+    //     // else if(m_nowState == State.Judge)
+    //     // {
+    //     //     SetModeBoard("Replay");
+    //     // }
+    //     //     else if(m_nowState == State.Replay)
+    //     //     {
+
+    //     //     }
+    // }
 }
